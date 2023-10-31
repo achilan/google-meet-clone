@@ -12,8 +12,15 @@ export const Participant = (props) => {
     videoRef,
     showAvatar,
     currentUser,
+    background,
+    canvasRef
   } = props;
   if (!currentParticipant) return <></>;
+  const randomBackground = () => {
+    const classes = ["background1", "background1", "background1"];
+    const random = Math.floor(Math.random() * 3);
+    return classes[random];
+  }
   return (
     <div className={`participant ${hideVideo ? "hide" : ""}`}>
       <Card>
@@ -24,6 +31,11 @@ export const Participant = (props) => {
           autoPlay
           playsInline
         ></video>
+          <canvas
+            ref={canvasRef}
+            className={`canvas ${randomBackground()} ${background ? "background-enabled" : "background-disabled"}`}
+            id={`participantCanvas${curentIndex}`}
+          ></canvas>
         {!currentParticipant.audio && (
           <FontAwesomeIcon
             className="muted"

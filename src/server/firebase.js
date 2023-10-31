@@ -1,8 +1,8 @@
 import firebase from "firebase";
 
 var firebaseConfig = {
-  apiKey: "", // Add API Key
-  databaseURL:"" // Add databaseURL
+  apiKey: "AIzaSyDWhzVCbkhVXy2ZrHwKM6yf-xirj9s-UOo", // Add API Key
+  databaseURL:"https://videoconference-e4301-default-rtdb.firebaseio.com" // Add databaseURL
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);

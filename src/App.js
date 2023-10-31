@@ -31,6 +31,7 @@ function App(props) {
           audio: true,
           video: false,
           screen: false,
+          background: false,
         };
         const userStatusRef = participantRef.push({
           userName,
@@ -57,6 +58,7 @@ function App(props) {
           .child(snap.key)
           .child("preferences");
         preferenceUpdateEvent.on("child_changed", (preferenceSnap) => {
+          /* console.log(preferenceSnap.key, preferenceSnap.val()); */
           props.updateParticipant({
             [snap.key]: {
               [preferenceSnap.key]: preferenceSnap.val(),
@@ -88,6 +90,7 @@ const mapStateToProps = (state) => {
   return {
     stream: state.mainStream,
     user: state.currentUser,
+    background: state.background,
   };
 };
 

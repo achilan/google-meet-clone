@@ -8,11 +8,12 @@ export const updatePreference = (userId, preference) => {
     .child(userId)
     .child("preferences");
   setTimeout(() => {
+    console.log(preference);
     currentParticipantRef.update(preference);
   });
 };
 
-export const createOffer = async (peerConnection, receiverId, createdID) => {
+export const createOffer = async (peerConnection, receiverId, createdID,background) => {
   const currentParticipantRef = participantRef.child(receiverId);
   peerConnection.onicecandidate = (event) => {
     event.candidate &&
@@ -28,6 +29,7 @@ export const createOffer = async (peerConnection, receiverId, createdID) => {
     sdp: offerDescription.sdp,
     type: offerDescription.type,
     userId: createdID,
+    background: background,
   };
 
   await currentParticipantRef.child("offers").push().set({ offer });

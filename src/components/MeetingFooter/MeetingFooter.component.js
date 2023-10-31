@@ -6,6 +6,7 @@ import {
   faDesktop,
   faVideoSlash,
   faMicrophoneSlash,
+  faRandom
 } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import "./MeetingFooter.css";
@@ -14,6 +15,7 @@ const MeetingFooter = (props) => {
     mic: true,
     video: false,
     screen: false,
+    background:false
   });
   const micClick = () => {
     setStreamState((currentState) => {
@@ -32,6 +34,14 @@ const MeetingFooter = (props) => {
       };
     });
   };
+  const onChangeBackgroundFooter = () => {
+    setStreamState((currentState) => {
+      return {
+        ...currentState,
+        background: true
+      };
+    });
+  }
 
   const onScreenClick = () => {
     props.onScreenClick(setScreenState);
@@ -51,8 +61,15 @@ const MeetingFooter = (props) => {
   useEffect(() => {
     props.onVideoClick(streamState.video);
   }, [streamState.video]);
+  useEffect(() => {
+    props.onChangeBackground(streamState.background);
+  }, [streamState.background]);
   return (
     <div className="meeting-footer">
+
+      <div className="meeting-icons" data-tip="Change Background" onClick={onChangeBackgroundFooter} >
+        <FontAwesomeIcon icon={faRandom} />
+      </div>
       <div
         className={"meeting-icons " + (!streamState.mic ? "active" : "")}
         data-tip={streamState.mic ? "Mute Audio" : "Unmute Audio"}

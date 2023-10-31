@@ -1,13 +1,13 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import MeetingFooter from "../MeetingFooter/MeetingFooter.component";
 import Participants from "../Participants/Participants.component";
 import "./MainScreen.css";
 import { connect } from "react-redux";
-import { setMainStream, updateUser } from "../../store/actioncreator";
+import { setMainStream, updateUser, setBackgroundStream } from "../../store/actioncreator";
 
 const MainScreen = (props) => {
   const participantRef = useRef(props.participants);
-
+  const [background, setBackground] = useState(false);
   const onMicClick = (micEnabled) => {
     if (props.stream) {
       props.stream.getAudioTracks()[0].enabled = micEnabled;
@@ -72,6 +72,12 @@ const MainScreen = (props) => {
 
     props.updateUser({ screen: true });
   };
+  const onChangeBackground = async (backgroundEnabled) => {
+    if (props.stream) {
+      await props.setBackgroundStream(backgroundEnabled);
+      await props.updateUser({ background: backgroundEnabled });
+    }
+  }
   return (
     <div className="wrapper">
       <div className="main-screen">
@@ -83,6 +89,7 @@ const MainScreen = (props) => {
           onScreenClick={onScreenClick}
           onMicClick={onMicClick}
           onVideoClick={onVideoClick}
+          onChangeBackground={onChangeBackground}
         />
       </div>
     </div>
@@ -94,6 +101,7 @@ const mapStateToProps = (state) => {
     stream: state.mainStream,
     participants: state.participants,
     currentUser: state.currentUser,
+    background: state.background
   };
 };
 
@@ -101,6 +109,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     setMainStream: (stream) => dispatch(setMainStream(stream)),
     updateUser: (user) => dispatch(updateUser(user)),
+    setBackgroundStream: (background) => dispatch(setBackgroundStream(background))
   };
 };
 
