@@ -53,10 +53,14 @@
 
 <!-- CONTACT -->
 
-## Contact
+## Contact  
 
 Instagram - [@Instagram](https://www.instagram.com/ckalgos/) - ckalgos@gmail.com
 
 Twitter - [@Twitter](https://twitter.com/AlgosCk)
 
 Project Link: [https://github.com/ckalgos/google-meet-clone](https://github.com/ckalgos/google-meet-clone)
+
+Author fork- [@Instagram](https://www.instagram.com/anthony_chilan/)
+
+Twitter fork - [@Twitter](https://twitter.com/alimchp)
