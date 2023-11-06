@@ -124,15 +124,6 @@ const Participants = (props) => {
         canvasRef.current = canvasElement;
         if (videElement) {
           videElement.srcObject = remoteStream
-          /* if (currentParticipant.background) {
-             backgroundperuser = true;
-             canvasElement.classList.add("background-enabled");
-             canvasElement.classList.remove("background-disabled");
-             console.log(currentParticipant, "currentParticipant")
-             setTimeout(() => {
-               bdPixelWithParameters(videElement, canvasElement);
-             }, 1000);
-           } */
         }
       };
     }
