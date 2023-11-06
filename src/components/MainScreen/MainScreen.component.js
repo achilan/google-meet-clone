@@ -3,7 +3,7 @@ import MeetingFooter from "../MeetingFooter/MeetingFooter.component";
 import Participants from "../Participants/Participants.component";
 import "./MainScreen.css";
 import { connect } from "react-redux";
-import { setMainStream, updateUser, setBackgroundStream } from "../../store/actioncreator";
+import { setMainStream, updateUser, setBackgroundStream,setBackgroundPicture } from "../../store/actioncreator";
 
 const MainScreen = (props) => {
   const participantRef = useRef(props.participants);
@@ -74,8 +74,18 @@ const MainScreen = (props) => {
   };
   const onChangeBackground = async (backgroundEnabled) => {
     if (props.stream) {
-      await props.setBackgroundStream(backgroundEnabled);
-      await props.updateUser({ background: backgroundEnabled });
+      if (backgroundEnabled) {
+        await props.setBackgroundStream(backgroundEnabled);
+        await props.updateUser({ background: backgroundEnabled });
+      }else{
+        await props.setBackgroundStream(false);
+        await props.updateUser({ background: false });
+      }
+    }
+  }
+  const onChangeBackgroundPicture = async (className) => {
+    if (props.stream) {
+      await props.updateUser({ className: className });
     }
   }
   return (
@@ -90,6 +100,7 @@ const MainScreen = (props) => {
           onMicClick={onMicClick}
           onVideoClick={onVideoClick}
           onChangeBackground={onChangeBackground}
+          onChangeBackgroundPicture={onChangeBackgroundPicture}
         />
       </div>
     </div>
@@ -109,7 +120,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     setMainStream: (stream) => dispatch(setMainStream(stream)),
     updateUser: (user) => dispatch(updateUser(user)),
-    setBackgroundStream: (background) => dispatch(setBackgroundStream(background))
+    setBackgroundStream: (background) => dispatch(setBackgroundStream(background)),
+    setBackgroundPicture: (className) => dispatch(setBackgroundPicture(className))
   };
 };
 

@@ -29,3 +29,38 @@ div[disabled]
   pointer-events: none;
   opacity: 0.3;
 }
+.backgrounds{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+.background1 {
+  background-image: url(https://ieced.com.ec/assets/bg1.jpg);
+  background-size: cover;
+}
+.background2 {
+  background-image: url(https://wallpapers.com/images/hd/animated-disney-castle-has6vy47k75d0bzs.jpg);
+  background-size: cover;
+}
+.background-selection{
+  width: 200px;
+  height: 100px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.react-responsive-modal-root{
+  z-index: 9999999!important;
+}
+.active-background{
+  border: 2px solid #ea4335;
+}
+.gray{
+  background-color: #444;
+}
+.center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

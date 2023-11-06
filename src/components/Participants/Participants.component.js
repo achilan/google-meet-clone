@@ -14,19 +14,28 @@ const Participants = (props) => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
       videoRef.current.muted = true;
-      enableBackground();
+      //enableBackground();
     }
   }, [props.currentUser, props.stream]);
   const enableBackground = () => {
     const participantList = Object.keys(props.participants);
     participantList.forEach((element) => {
-      console.log(props.participants[element])
       if (props.participants[element].background) {
         const videoRef = document.getElementById(`participantVideo${element}`);
         const canvasRef = document.getElementById(`participantCanvas${element}`);
+        canvasRef.classList.remove("background-disabled");
+        canvasRef.classList.add("background-enabled");
+        if(props.participants[element].className){
+          canvasRef.classList.remove("background1", "background2", "background3")
+          canvasRef.classList.add(props.participants[element].className);
+        }
         setTimeout(() => {
           bdPixelWithParameters(videoRef, canvasRef);
         }, 1500);
+      }else{
+        const canvasRef = document.getElementById(`participantCanvas${element}`);
+        canvasRef.classList.remove("background-enabled");
+        canvasRef.classList.add("background-disabled");
       }
     }
     );
@@ -40,7 +49,8 @@ const Participants = (props) => {
     tempCanvas.width = videoRef.videoWidth;
     tempCanvas.height = videoRef.videoHeight;
     const tempCtx = tempCanvas.getContext("2d");
-    canvasRef.classList.add("background-enabled");
+    //canvasRef.classList.add("background-enabled");
+    //canvasRef.classList.remove("background-disabled");
     const runBodysegment = async () => {
       const net = await bodyPix.load({
         architecture: "MobileNetV1",
@@ -114,11 +124,11 @@ const Participants = (props) => {
         canvasRef.current = canvasElement;
         if (videElement) {
           videElement.srcObject = remoteStream
-          /*  if (currentParticipant.background) {
+          /* if (currentParticipant.background) {
              backgroundperuser = true;
              canvasElement.classList.add("background-enabled");
              canvasElement.classList.remove("background-disabled");
-             console.log(canvasElement, currentParticipant)
+             console.log(currentParticipant, "currentParticipant")
              setTimeout(() => {
                bdPixelWithParameters(videElement, canvasElement);
              }, 1000);
@@ -172,7 +182,8 @@ const mapStateToProps = (state) => {
     participants: state.participants,
     currentUser: state.currentUser,
     stream: state.mainStream,
-    background: state.background
+    background: state.background,
+    className: state.className
   };
 };
 

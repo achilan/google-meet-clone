@@ -6,17 +6,36 @@ import {
   faDesktop,
   faVideoSlash,
   faMicrophoneSlash,
-  faRandom
+  faImage,
+  faBan
 } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import "./MeetingFooter.css";
+import 'react-responsive-modal/styles.css';
+import { Modal } from 'react-responsive-modal';
 const MeetingFooter = (props) => {
   const [streamState, setStreamState] = useState({
     mic: true,
     video: false,
     screen: false,
-    background:false
+    background: false,
+    className: "",
   });
+  const backgrounds = [
+    {
+      name: "background1",
+      className: "background1"
+    },
+    {
+      name: "background2",
+      className: "background2"
+    },
+    {
+      name: "background3",
+      className: "background3"
+    },
+  ];
+  const [open, setOpen] = useState(false);
   const micClick = () => {
     setStreamState((currentState) => {
       return {
@@ -34,19 +53,31 @@ const MeetingFooter = (props) => {
       };
     });
   };
-  const onChangeBackgroundFooter = () => {
+  const onChangeBackgroundFooter = (a) => {
     setStreamState((currentState) => {
       return {
         ...currentState,
-        background: true
+        background: a,
       };
     });
-  }
-
+  };
+  const onChangeBackgroundPictureFooter = (a) => {
+    setStreamState((currentState) => {
+      return {
+        ...currentState,
+        className: a,
+      };
+    });
+  };
+  const openModalBackground = () => {
+    setOpen(true);
+  };
+  const onCloseModal = () => {
+    setOpen(false);
+  };
   const onScreenClick = () => {
     props.onScreenClick(setScreenState);
   };
-
   const setScreenState = (isEnabled) => {
     setStreamState((currentState) => {
       return {
@@ -64,12 +95,41 @@ const MeetingFooter = (props) => {
   useEffect(() => {
     props.onChangeBackground(streamState.background);
   }, [streamState.background]);
+  useEffect(() => {
+    props.onChangeBackgroundPicture(streamState.className);
+  }, [streamState.className]);
   return (
     <div className="meeting-footer">
-
-      <div className="meeting-icons" data-tip="Change Background" onClick={onChangeBackgroundFooter} >
-        <FontAwesomeIcon icon={faRandom} />
+      <div className={"meeting-icons " + (streamState.background ? "active" : "")} data-tip="Change Background" onClick={openModalBackground} >
+        <FontAwesomeIcon icon={faImage} />
       </div>
+      <Modal open={open} onClose={onCloseModal} center>
+        <h2>Selecciona el fondo</h2>
+        <div className="backgrounds">
+          <div
+            key="none"
+            className={`background-selection center gray none ${streamState.className === "" ? "active-background" : ""}`}
+            onClick={() => {
+              onChangeBackgroundFooter(false);
+              onChangeBackgroundPictureFooter("");
+              //onCloseModal();
+            }}
+          >
+            <FontAwesomeIcon fontSize={30} color="#fff" icon={faBan} />
+          </div>
+          {backgrounds.map((background) => (
+            <div
+              key={background.name}
+              className={`background-selection ${background.name} ${streamState.className === background.className ? "active-background" : ""}`}
+              onClick={() => {
+                onChangeBackgroundPictureFooter(background.className);
+                onChangeBackgroundFooter(true);
+                //onCloseModal();
+              }}
+            ></div>
+          ))}
+        </div>
+      </Modal>
       <div
         className={"meeting-icons " + (!streamState.mic ? "active" : "")}
         data-tip={streamState.mic ? "Mute Audio" : "Unmute Audio"}

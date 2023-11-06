@@ -33,7 +33,7 @@ export const Participant = (props) => {
         ></video>
           <canvas
             ref={canvasRef}
-            className={`canvas ${randomBackground()} ${background ? "background-enabled" : "background-disabled"}`}
+            className={`canvas`}
             id={`participantCanvas${curentIndex}`}
           ></canvas>
         {!currentParticipant.audio && (

@@ -6,6 +6,7 @@ import {
   UPDATE_USER,
   UPDATE_PARTICIPANT,
   SET_BACKGROUND_STREAM,
+  SET_BACKGROUND_PICTURE,
 } from "./actiontypes";
 
 import {
@@ -19,6 +20,7 @@ let defaultUserState = {
   participants: {},
   currentUser: null,
   background: false,
+  className: "",
 };
 
 const servers = {
@@ -60,7 +62,7 @@ export const userReducer = (state = defaultUserState, action) => {
     if (currentUserId === newUserId)
     payload.newUser[newUserId].currentUser = true;
     payload.newUser[newUserId].avatarColor = generateColor();
-    payload.newUser[newUserId].background = state.background;
+    /* payload.newUser[newUserId].background = state.background; */
 
     let participants = { ...state.participants, ...payload.newUser };
     state = { ...state, participants };
@@ -71,6 +73,7 @@ export const userReducer = (state = defaultUserState, action) => {
     const userId = Object.keys(payload.currentUser)[0];
     payload.currentUser[userId].avatarColor = generateColor();
     payload.currentUser[userId].background = state.background;
+    payload.currentUser[userId].className = state.className
     initializeListensers(userId);
     state = { ...state, currentUser: { ...payload.currentUser }, participants };
     return state;
@@ -89,6 +92,8 @@ export const userReducer = (state = defaultUserState, action) => {
       ...payload.currentUser,
       ...state.background
     };
+    state.currentUser[userId].background = state.background;
+    state.participants[userId].className = state.className;
     state = {
       ...state,
       currentUser: { ...state.currentUser },
@@ -102,12 +107,15 @@ export const userReducer = (state = defaultUserState, action) => {
       ...payload.newUser[newUserId],
       ...state.background
     };
-    console.log(payload.newUser, state.background)
     /* state.participants[newUserId].background = state.background; */
     let participants = { ...state.participants, ...payload.newUser };
     state = { ...state, participants };
     return state;
   } else if (action.type === SET_BACKGROUND_STREAM) {
+    let payload = action.payload;
+    state = { ...state, ...payload };
+    return state;
+  } else if (action.type === SET_BACKGROUND_PICTURE) {
     let payload = action.payload;
     state = { ...state, ...payload };
     return state;

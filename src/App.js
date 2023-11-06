@@ -17,14 +17,12 @@ function App(props) {
       audio: true,
       video: true,
     });
-
     return localStream;
   };
   useEffect(async () => {
     const stream = await getUserStream();
     stream.getVideoTracks()[0].enabled = false;
     props.setMainStream(stream);
-
     connectedRef.on("value", (snap) => {
       if (snap.val()) {
         const defaultPreference = {
@@ -32,6 +30,7 @@ function App(props) {
           video: false,
           screen: false,
           background: false,
+          className: "",
         };
         const userStatusRef = participantRef.push({
           userName,
@@ -58,7 +57,7 @@ function App(props) {
           .child(snap.key)
           .child("preferences");
         preferenceUpdateEvent.on("child_changed", (preferenceSnap) => {
-          /* console.log(preferenceSnap.key, preferenceSnap.val()); */
+          //console.log(preferenceSnap.val(), preferenceSnap.key);
           props.updateParticipant({
             [snap.key]: {
               [preferenceSnap.key]: preferenceSnap.val(),
