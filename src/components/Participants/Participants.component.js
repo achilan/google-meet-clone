@@ -14,7 +14,6 @@ const Participants = (props) => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
       videoRef.current.muted = true;
-      //enableBackground();
     }
   }, [props.currentUser, props.stream]);
   const enableBackground = () => {
