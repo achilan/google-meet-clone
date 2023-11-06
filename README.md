@@ -63,4 +63,4 @@ Project Link: [https://github.com/ckalgos/google-meet-clone](https://github.com/
 
 Author fork- [@Instagram](https://www.instagram.com/anthony_chilan/)
 
-Twitter fork - [@Twitter](https://twitter.com/alimchp)
+Twitter fork - [@Twitter](https://twitter.com/alimchp) - anthonychilan@icloud.com
