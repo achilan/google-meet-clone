@@ -51,21 +51,23 @@ const Participants = (props) => {
     tempCanvas.width = videoRef.videoWidth;
     tempCanvas.height = videoRef.videoHeight;
     const tempCtx = tempCanvas.getContext("2d");
-    
+    const targetFPS = 60; // Desired frame rate (in fps)
+    const frameInterval = 1000 / targetFPS; // Time interval in milliseconds
     const runBodysegment = async () => {
       const net = await bodyPix.load({
         architecture: "MobileNetV1",
         outputStride: 16,
         multiplier: 0.75,
         quantBytes: 2,
-        segmentationThreshold: 0.1,
+        segmentationThreshold: 0.9,
         internalResolution: "medium",
       });
       const drawMask = async () => {
+        const startTime = performance.now(); // Record the start time
         const segmentation = await net.segmentPerson(videoRef,{
           flipHorizontal: false,
           internalResolution: "medium",
-          segmentationThreshold: 0.1,
+          segmentationThreshold: 0.9,
         });
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
@@ -82,10 +84,14 @@ const Participants = (props) => {
         context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
+        const elapsedTime = performance.now() - startTime; // Calculate elapsed time
+
+        // Calculate the delay needed to achieve the target frame rate
+        const delay = Math.max(0, frameInterval - elapsedTime);
         //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         setTimeout(() => {
           requestAnimationFrame(drawMask);
-        }, 1000 / 60);
+        }, delay);
       }
       drawMask();
     };
