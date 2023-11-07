@@ -58,7 +58,7 @@ const Participants = (props) => {
         outputStride: 16,
         multiplier: 0.75,
         quantBytes: 2,
-        segmentationThreshold: 0.4,
+        segmentationThreshold: 0.1,
         internalResolution: "high",
       });
       const drawMask = async () => {
