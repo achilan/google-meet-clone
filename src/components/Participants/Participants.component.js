@@ -54,9 +54,9 @@ const Participants = (props) => {
     
     const runBodysegment = async () => {
       const net = await bodyPix.load({
-        architecture: "MobileNetV1",
+        architecture: "ResNet50",
         outputStride: 16,
-        multiplier: 0.75,
+        multiplier: 1,
         quantBytes: 2,
         segmentationThreshold: 0.4,
         internalResolution: "high",
