@@ -59,19 +59,23 @@ const Participants = (props) => {
         multiplier: 0.75,
         quantBytes: 2,
         segmentationThreshold: 0.1,
-        internalResolution: "high",
+        internalResolution: "medium",
       });
       const drawMask = async () => {
-        const segmentation = await net.segmentPerson(videoRef);
+        const segmentation = await net.segmentPerson(videoRef,{
+          flipHorizontal: false,
+          internalResolution: "medium",
+          segmentationThreshold: 0.1,
+        });
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
-        tempCtx.filter = `blur(${blurRadius}px)`; // set the blur
+        tempCtx.filter = `blur(${blurRadius}px)`; 
         tempCtx.drawImage(
           tempCanvas,
           0,
           0,
         );
-        tempCtx.filter = "none"; // Reset the filter
+        tempCtx.filter = "none";
         tempCtx.imageSmoothingEnabled = true;
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
