@@ -71,6 +71,7 @@ const Participants = (props) => {
           0,
           0,
         );
+        tempCtx.filter = "none"; // Reset the filter
         tempCtx.imageSmoothingEnabled = true;
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
