@@ -44,32 +44,40 @@ const Participants = (props) => {
   }, [props.participants]);
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     const tempCanvas = document.createElement("canvas");
+    const blurRadius = 5;
     const context = canvasRef.getContext("2d");
+    canvasRef.width = videoRef.videoWidth;
+    canvasRef.height = videoRef.videoHeight;
     tempCanvas.width = videoRef.videoWidth;
     tempCanvas.height = videoRef.videoHeight;
     const tempCtx = tempCanvas.getContext("2d");
-    //canvasRef.classList.add("background-enabled");
-    //canvasRef.classList.remove("background-disabled");
+    
     const runBodysegment = async () => {
       const net = await bodyPix.load({
         architecture: "MobileNetV1",
         outputStride: 16,
         multiplier: 0.75,
         quantBytes: 2,
+        segmentationThreshold: 0.4,
+        internalResolution: "high",
       });
       const drawMask = async () => {
-        const segmentation = await net.segmentPerson(videoRef, {
-          flipHorizontal: false,
-          internalResolution: "medium",
-          segmentationThreshold: 0.7,
-        });
+        const segmentation = await net.segmentPerson(videoRef);
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
+        tempCtx.filter = `blur(${blurRadius}px)`; // set the blur
+        tempCtx.drawImage(
+          tempCanvas,
+          0,
+          0,
+        );
+        tempCtx.imageSmoothingEnabled = true;
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
         context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
+        tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         setTimeout(() => {
           requestAnimationFrame(drawMask);
         }, 1000 / 60);
