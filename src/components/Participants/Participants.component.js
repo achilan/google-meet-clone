@@ -77,7 +77,7 @@ const Participants = (props) => {
         context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
-        tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+        //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         setTimeout(() => {
           requestAnimationFrame(drawMask);
         }, 1000 / 60);
