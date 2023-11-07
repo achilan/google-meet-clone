@@ -34,6 +34,7 @@ div[disabled]
     width: 100%;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 .background1 {
   background-image: url(https://ieced.com.ec/assets/bg1.jpg);
@@ -42,6 +43,10 @@ div[disabled]
 .background2 {
   background-image: url(https://wallpapers.com/images/hd/animated-disney-castle-has6vy47k75d0bzs.jpg);
   background-size: cover;
+}
+.react-responsive-modal-modal{
+  width: 80%!important;
+  height: 60%!important;
 }
 .background-selection{
   width: 200px;
