@@ -72,7 +72,7 @@ const Participants = (props) => {
         context.restore();
         setTimeout(() => {
           requestAnimationFrame(drawMask);
-        }, 1000 / 30);
+        }, 1000 / 60);
       }
       drawMask();
     };
