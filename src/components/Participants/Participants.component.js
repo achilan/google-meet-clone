@@ -51,7 +51,7 @@ const Participants = (props) => {
     tempCanvas.width = videoRef.videoWidth;
     tempCanvas.height = videoRef.videoHeight;
     const tempCtx = tempCanvas.getContext("2d");
-    const targetFPS = 60; // Desired frame rate (in fps)
+    const targetFPS = 65; // Desired frame rate (in fps)
     const frameInterval = 1000 / targetFPS; // Time interval in milliseconds
     const runBodysegment = async () => {
       const net = await bodyPix.load({
@@ -60,18 +60,19 @@ const Participants = (props) => {
         multiplier: 0.75,
         quantBytes: 2,
         segmentationThreshold: 0.9,
-        internalResolution: "medium",
+        internalResolution: "high",
       });
       const drawMask = async () => {
         const startTime = performance.now(); // Record the start time
-        const segmentation = await net.segmentPerson(videoRef,{
+        const segmentation = await net.segmentPerson(videoRef, {
           flipHorizontal: false,
-          internalResolution: "medium",
+          internalResolution: "high", // Use "high" for smoother results
           segmentationThreshold: 0.9,
         });
+      
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
-        tempCtx.filter = `blur(${blurRadius}px)`; 
+        tempCtx.filter = `blur(${blurRadius}px)`; // Increase blurRadius for smoother edges
         tempCtx.imageSmoothingEnabled = true;
         tempCtx.globalCompositeOperation = "darken";
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
@@ -80,7 +81,7 @@ const Participants = (props) => {
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
         const elapsedTime = performance.now() - startTime; // Calculate elapsed time
-
+      
         // Calculate the delay needed to achieve the target frame rate
         const delay = Math.max(0, frameInterval - elapsedTime);
         //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
