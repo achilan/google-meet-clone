@@ -76,8 +76,7 @@ const Participants = (props) => {
         tempCtx.globalCompositeOperation = "darken";
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
-        context.globalCompositeOperation = "darken";
-        context.filter = `blur(${blurRadius}px)`;
+        context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
         const elapsedTime = performance.now() - startTime; // Calculate elapsed time
