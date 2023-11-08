@@ -24,14 +24,14 @@ const Participants = (props) => {
         const canvasRef = document.getElementById(`participantCanvas${element}`);
         canvasRef.classList.remove("background-disabled");
         canvasRef.classList.add("background-enabled");
-        if(props.participants[element].className){
+        if (props.participants[element].className) {
           canvasRef.classList.remove("background1", "background2", "background3")
           canvasRef.classList.add(props.participants[element].className);
         }
         setTimeout(() => {
           bdPixelWithParameters(videoRef, canvasRef);
         }, 1500);
-      }else{
+      } else {
         const canvasRef = document.getElementById(`participantCanvas${element}`);
         canvasRef.classList.remove("background-enabled");
         canvasRef.classList.add("background-disabled");
@@ -44,7 +44,7 @@ const Participants = (props) => {
   }, [props.participants]);
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     const tempCanvas = document.createElement("canvas");
-    const blurRadius = 5;
+    const blurRadius = 10;
     const context = canvasRef.getContext("2d");
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
@@ -61,38 +61,65 @@ const Participants = (props) => {
         quantBytes: 2,
         segmentationThreshold: 0.9,
         internalResolution: "medium",
+        modelUrl:'https://meet.google.com/_/rtcvidproc/release/336842817/segm_lite_v509.tflite'
       });
       const drawMask = async () => {
-        const startTime = performance.now(); // Record the start time
-        const segmentation = await net.segmentPerson(videoRef,{
+        const startTime = performance.now();
+        const segmentation = await net.segmentPerson(videoRef, {
           flipHorizontal: false,
           internalResolution: "medium",
           segmentationThreshold: 0.9,
         });
         const mask = bodyPix.toMask(segmentation);
-        tempCtx.putImageData(mask, 0, 0);
-        tempCtx.filter = `blur(${blurRadius}px)`; 
-        tempCtx.drawImage(
-          tempCanvas,
-          0,
-          0,
-        );
-        tempCtx.filter = "none";
+
+        // Apply a Gaussian blur to the mask for smoother edges
+        const blurRadius = 5; // You can adjust this value
+
+        const blurredMask = applyGaussianBlur(mask, blurRadius);
+        tempCtx.putImageData(blurredMask, 0, 0);
+
         tempCtx.imageSmoothingEnabled = true;
+
+        // Draw the video frame on the canvas
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+
         context.save();
         context.globalCompositeOperation = "destination-out";
+
+        // Draw the masked content onto the main canvas
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
+
         context.restore();
+
         const elapsedTime = performance.now() - startTime; // Calculate elapsed time
 
         // Calculate the delay needed to achieve the target frame rate
         const delay = Math.max(0, frameInterval - elapsedTime);
-        //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+
         setTimeout(() => {
           requestAnimationFrame(drawMask);
         }, delay);
+      };
+
+      function applyGaussianBlur(imageData, radius) {
+        // Create a temporary canvas and context for blurring
+        const tempBlurCanvas = document.createElement('canvas');
+        const tempBlurCtx = tempBlurCanvas.getContext('2d');
+
+        // Set the temporary canvas size
+        tempBlurCanvas.width = imageData.width;
+        tempBlurCanvas.height = imageData.height;
+
+        // Put the image data on the temporary canvas
+        tempBlurCtx.putImageData(imageData, 0, 0);
+
+        // Apply the blur effect
+        tempBlurCtx.filter = `blur(${radius}px)`;
+        tempBlurCtx.drawImage(tempBlurCanvas, 0, 0);
+
+        return tempBlurCtx.getImageData(0, 0, imageData.width, imageData.height);
       }
+
       drawMask();
     };
     runBodysegment();

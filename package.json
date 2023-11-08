@@ -24,8 +24,8 @@
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "dev": "HTTPS=true SSL_CRT_FILE=./certificate/certificate.crt SSL_KEY_FILE=./certificate/private.key PORT=443 HOST=videocall.mdc-server.com react-scripts --openssl-legacy-provider start",
+    "dev": "react-scripts start",
+    "start": "HTTPS=true SSL_CRT_FILE=./certificate/certificate.crt SSL_KEY_FILE=./certificate/private.key PORT=443 HOST=videocall.mdc-server.com react-scripts --openssl-legacy-provider start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
