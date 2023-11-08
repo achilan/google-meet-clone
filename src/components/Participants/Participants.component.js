@@ -44,14 +44,14 @@ const Participants = (props) => {
   }, [props.participants]);
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     const tempCanvas = document.createElement("canvas");
-    const blurRadius = 8;
+    const blurRadius = 5;
     const context = canvasRef.getContext("2d");
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     tempCanvas.width = videoRef.videoWidth;
     tempCanvas.height = videoRef.videoHeight;
     const tempCtx = tempCanvas.getContext("2d");
-    const targetFPS = 65; // Desired frame rate (in fps)
+    const targetFPS = 60; // Desired frame rate (in fps)
     const frameInterval = 1000 / targetFPS; // Time interval in milliseconds
     const runBodysegment = async () => {
       const net = await bodyPix.load({
@@ -60,37 +60,49 @@ const Participants = (props) => {
         multiplier: 0.75,
         quantBytes: 2,
         segmentationThreshold: 0.9,
-        internalResolution: "high",
+        internalResolution: "medium",
       });
+    
       const drawMask = async () => {
         const startTime = performance.now(); // Record the start time
+    
         const segmentation = await net.segmentPerson(videoRef, {
           flipHorizontal: false,
-          internalResolution: "high", // Use "high" for smoother results
+          internalResolution: "medium",
           segmentationThreshold: 0.9,
         });
-      
+    
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
-        tempCtx.filter = `blur(${blurRadius}px)`; // Increase blurRadius for smoother edges
-        tempCtx.imageSmoothingEnabled = true;
-        tempCtx.globalCompositeOperation = "darken";
+    
+        // Blur the mask to smooth the edges
+        tempCtx.filter = `blur(${blurRadius}px)`;
+        tempCtx.drawImage(tempCanvas, 0, 0);
+        tempCtx.filter = "none"; // Reset the filter
+    
+        // Composite the blurred mask onto the original video
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
         context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
+    
         const elapsedTime = performance.now() - startTime; // Calculate elapsed time
-      
+    
         // Calculate the delay needed to achieve the target frame rate
         const delay = Math.max(0, frameInterval - elapsedTime);
-        //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+    
+        // Clear the temporary canvas for the next iteration
+        tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+    
         setTimeout(() => {
           requestAnimationFrame(drawMask);
         }, delay);
-      }
+      };
+    
       drawMask();
     };
+    
     runBodysegment();
   }
   const currentUser = props.currentUser
