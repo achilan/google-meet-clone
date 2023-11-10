@@ -16,7 +16,6 @@ const Participants = (props) => {
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
       
     });
-    
     selfieSegmentation.setOptions({
       modelSelection: 1,
     });
@@ -31,6 +30,7 @@ const Participants = (props) => {
   const enableBackground = () => {
     const participantList = Object.keys(props.participants);
     participantList.forEach((element) => {
+      console.log(element)
       if (props.participants[element].background) {
         const videoRef = document.getElementById(`participantVideo${element}`);
         const canvasRef = document.getElementById(`participantCanvas${element}`);
@@ -58,6 +58,7 @@ const Participants = (props) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
+    console.log(canvasRef, videoRef);
     const drawCanvas = async () => {
       const canvasCtx = canvasRef.getContext("2d");
       if (videoRef.readyState < 2) {
@@ -97,20 +98,6 @@ const Participants = (props) => {
   
     // Start the initial frame processing
     drawCanvas();
-    const applySmoothing = (mask) => {
-      const smoothedMaskCanvas = document.createElement("canvas");
-      const smoothedMaskCtx = smoothedMaskCanvas.getContext("2d");
-    
-      // Set the size of the temporary canvas
-      smoothedMaskCanvas.width = mask.width;
-      smoothedMaskCanvas.height = mask.height;
-    
-      // Apply smoothing filter
-      smoothedMaskCtx.filter = "blur(5px)";
-      smoothedMaskCtx.drawImage(mask, 0, 0);
-    
-      return smoothedMaskCanvas;
-    };
   };
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
