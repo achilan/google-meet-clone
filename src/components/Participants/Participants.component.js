@@ -60,17 +60,20 @@ const Participants = (props) => {
     canvasRef.height = videoRef.videoHeight;
     const drawCanvas = async () => {
       const canvasCtx = canvasRef.getContext("2d");
-  
+      if (videoRef.readyState < 2) {
+        requestAnimationFrame(drawCanvas);
+        return;
+      }
       // Start processing frames
       await SelfieSegmentation.send({ image: videoRef });
   
       // Set up the onResults callback
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
-          const smoothedMask = applySmoothing(results.segmentationMask)
+         // const smoothedMask = applySmoothing(results.segmentationMask)
           canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.drawImage(
-            smoothedMask,
+            results.segmentationMask,
             0,
             0,
             canvasRef.width,
