@@ -54,6 +54,15 @@ const Participants = (props) => {
   useEffect(() => {
     enableBackground();
   }, [props.participants]);
+  const isSafari = () => {
+    return (
+      navigator.vendor &&
+      navigator.vendor.indexOf("Apple") > -1 &&
+      navigator.userAgent &&
+      navigator.userAgent.indexOf("CriOS") === -1 &&
+      navigator.userAgent.indexOf("FxiOS") === -1
+    );
+  };
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
@@ -66,6 +75,12 @@ const Participants = (props) => {
         return;
       }
       // Start processing frames
+      //use captureStream safari
+      
+      if (isSafari()) {
+        const stream = canvasRef.captureStream();
+        videoRef.srcObject = stream;
+      }
       await SelfieSegmentation.send({ image: videoRef });
   
       // Set up the onResults callback
