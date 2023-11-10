@@ -10,6 +10,18 @@ const Participants = (props) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
+  const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
+  useEffect(() => {
+    const selfieSegmentation = new mpSelfieSegmentation.SelfieSegmentation({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+      
+    });
+    
+    selfieSegmentation.setOptions({
+      modelSelection: 1,
+    });
+    setSelfieSegmentation(selfieSegmentation);
+  }, []);
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
@@ -46,23 +58,14 @@ const Participants = (props) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    const selfieSegmentation = new mpSelfieSegmentation.SelfieSegmentation({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-      
-    });
-  
-    selfieSegmentation.setOptions({
-      modelSelection: 1,
-    });
-  
     const drawCanvas = async () => {
       const canvasCtx = canvasRef.getContext("2d");
   
       // Start processing frames
-      await selfieSegmentation.send({ image: videoRef });
+      await SelfieSegmentation.send({ image: videoRef });
   
       // Set up the onResults callback
-      selfieSegmentation.onResults(async (results) => {
+      SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
           const smoothedMask = applySmoothing(results.segmentationMask)
           canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
