@@ -5,7 +5,6 @@ import { Participant } from "./Participant/Participant.component";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
-import * as bodyPix from "@tensorflow-models/body-pix";
 const Participants = (props) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
