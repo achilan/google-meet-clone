@@ -62,60 +62,35 @@ const Participants = (props) => {
         segmentationThreshold: 0.7,
         internalResolution: "medium",
       });
-    
+
       const drawMask = async () => {
         const startTime = performance.now(); // Record the start time
-    
+
         const segmentation = await net.segmentPerson(videoRef, {
           flipHorizontal: false,
           internalResolution: "medium",
           segmentationThreshold: 0.7,
           maxDetections: 1,
         });
-    
+
         const mask = bodyPix.toMask(segmentation);
         tempCtx.putImageData(mask, 0, 0);
-    
+
         // Blur the mask to smooth the edges
         tempCtx.filter = `blur(${blurRadius}px)`;
         tempCtx.drawImage(tempCanvas, 0, 0);
-    
-        // Create a new canvas to store the blurred mask corners
-        const cornerBlurCanvas = document.createElement('canvas');
-        cornerBlurCanvas.width = canvasRef.width;
-        cornerBlurCanvas.height = canvasRef.height;
-        const cornerBlurCtx = cornerBlurCanvas.getContext('2d');
-    
-        // Copy the blurred mask to the corner blur canvas
-        cornerBlurCtx.drawImage(tempCanvas, 0, 0);
-    
-        // Apply a stronger blur to the corners of the mask
-        cornerBlurCtx.filter = `blur(${blurRadius * 2}px)`;
-        cornerBlurCtx.drawImage(cornerBlurCanvas, 0, 0);
-    
-        // Composite the blurred mask corners onto the blurred mask
-        tempCtx.save();
-        tempCtx.globalCompositeOperation = "source-in";
-        tempCtx.drawImage(cornerBlurCanvas, 0, 0, canvasRef.width, canvasRef.height);
-        tempCtx.restore();
-    
+
         // Composite the blurred mask onto the original video
         context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         context.save();
         context.globalCompositeOperation = "destination-out";
         context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
         context.restore();
-    
-        const elapsedTime = performance.now() - startTime; // Calculate elapsed time
-    
-        // Calculate the delay needed to achieve the target frame rate
-        const delay = Math.max(0, frameInterval - elapsedTime);
-    
         // Clear the temporary canvas for the next iteration
         tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         requestAnimationFrame(drawMask);
       };
-    
+
       drawMask();
     };
 
