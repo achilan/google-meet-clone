@@ -5,6 +5,7 @@ import { Participant } from "./Participant/Participant.component";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
+import * as mpSelfieSegmentation from '@mediapipe/selfie_segmentation';
 const Participants = (props) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
