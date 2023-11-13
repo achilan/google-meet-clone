@@ -54,16 +54,6 @@ const Participants = (props) => {
   useEffect(() => {
     enableBackground();
   }, [props.participants]);
-  const isSafari = () => {
-    return (
-      navigator.vendor &&
-      navigator.vendor.indexOf("Apple") > -1 &&
-      navigator.userAgent &&
-      navigator.userAgent.indexOf("CriOS") === -1 &&
-      navigator.userAgent.indexOf("FxiOS") === -1
-    );
-  };
-
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
