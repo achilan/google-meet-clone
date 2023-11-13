@@ -98,6 +98,7 @@ const Participants = (props) => {
           canvasCtx.globalCompositeOperation = "source-over";
         }
       });
+      //reset canvas for other intances 
       canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
       // Request the next animation frame
       requestAnimationFrame(drawCanvas);
