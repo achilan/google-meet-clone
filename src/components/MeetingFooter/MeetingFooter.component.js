@@ -34,6 +34,10 @@ const MeetingFooter = (props) => {
       name: "background3",
       className: "background3"
     },
+    {
+      name: "background4",
+      className: "background4"
+    },
   ];
   const [open, setOpen] = useState(false);
   const micClick = () => {
