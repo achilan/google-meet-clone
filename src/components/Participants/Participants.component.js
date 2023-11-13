@@ -12,27 +12,16 @@ const Participants = (props) => {
   const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
   const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
-  const [net, setNet] = useState(null);
   useEffect(() => {
     const segMentation = new selfie_segmentation.SelfieSegmentation({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
 
     });
     segMentation.setOptions({
-      modelSelection: 1
+      modelSelection: 0
     });
     setSelfieSegmentation(segMentation);
-    initBodyPix();
   }, []);
-  const initBodyPix = async () => {
-    const net = await bodyPix.load({
-      architecture: "MobileNetV1",
-      outputStride: 16,
-      multiplier: 0.75,
-      quantBytes: 2,
-    });
-    setNet(net);
-  }
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
@@ -78,13 +67,8 @@ const Participants = (props) => {
 
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     // Use MediaPipe to get segmentation mask
-    if (isSafari()) {
-      bdPixelWithParametersIos(videoRef, canvasRef);
-      return;
-    }
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    console.log(canvasRef, videoRef);
     const drawCanvas = async () => {
       const canvasCtx = canvasRef.getContext("2d");
       if (videoRef.readyState < 2) {
@@ -126,46 +110,6 @@ const Participants = (props) => {
     // Start the initial frame processing
     drawCanvas();
   };
-
-  const bdPixelWithParametersIos = async (videoRef, canvasRef) => {
-    const tempCanvas = document.createElement("canvas");
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCanvas.width = videoRef.videoWidth;
-    tempCanvas.height = videoRef.videoHeight;
-    canvasRef.width = videoRef.videoWidth;
-    canvasRef.height = videoRef.videoHeight;
-    const context = canvasRef.getContext("2d");
-    const drawMask = async () => {
-      const segmentation = await net.segmentPerson(videoRef,{
-        flipHorizontal: false,
-        internalResolution: "medium",
-        segmentationThreshold: 0.7,
-        maxDetections: 1,
-        scoreThreshold: 0.3,
-        nmsRadius: 20,
-        minKeypointScore: 0.3,
-        refineSteps: 10,
-      });
-      const mask = bodyPix.toMask(segmentation);
-      tempCtx.putImageData(mask, 0, 0);
-      tempCtx.drawImage(
-        tempCanvas,
-        0,
-        0,
-      );
-      tempCtx.imageSmoothingEnabled = true;
-      context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
-      context.save();
-      context.globalCompositeOperation = "destination-out";
-      context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
-      context.restore();
-      tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-      requestAnimationFrame(drawMask);
-    };
-    drawMask();
-  };
-
-
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
     : null;
