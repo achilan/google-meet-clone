@@ -40,9 +40,7 @@ const Participants = (props) => {
           canvasRefx.classList.remove("background1", "background2", "background3", "background4")
           canvasRefx.classList.add(props.participants[element].className);
         }
-        setTimeout(() => {
-          bdPixelWithParameters(videoRefx, canvasRefx);
-        }, 1500);
+        bdPixelWithParameters(videoRefx, canvasRefx);
       } else {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         canvasRefx.classList.remove("background-enabled");
