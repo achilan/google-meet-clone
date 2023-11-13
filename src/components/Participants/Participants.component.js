@@ -68,9 +68,9 @@ const Participants = (props) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    SelfieSegmentation.reset();
+    const canvasCtx = canvasRef.getContext("2d");
     const drawCanvas = async () => {
-      const canvasCtx = canvasRef.getContext("2d");
+      
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
@@ -98,8 +98,6 @@ const Participants = (props) => {
           canvasCtx.globalCompositeOperation = "source-over";
         }
       });
-      //reset canvas for other intances 
-      canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
       // Request the next animation frame
       requestAnimationFrame(drawCanvas);
     };
