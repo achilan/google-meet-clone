@@ -14,7 +14,7 @@ const Participants = (props) => {
   const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
   useEffect(() => {
     const segMentation = new selfie_segmentation.SelfieSegmentation({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
 
     });
     segMentation.setOptions({
@@ -87,15 +87,16 @@ const Participants = (props) => {
             canvasRef.width,
             canvasRef.height
           );
-          canvasCtx.globalCompositeOperation = "source-in";
+          canvasCtx.globalCompositeOperation = "source-out";
+          canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
+          canvasCtx.globalCompositeOperation = "destination-atop";
           canvasCtx.drawImage(
-            videoRef,
+            results.image,
             0,
             0,
             canvasRef.width,
             canvasRef.height
           );
-          canvasCtx.globalCompositeOperation = "source-over";
         }
       });
       // Request the next animation frame
