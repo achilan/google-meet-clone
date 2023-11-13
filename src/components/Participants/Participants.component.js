@@ -6,6 +6,7 @@ import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
 import * as selfie_segmentation from "@mediapipe/selfie_segmentation";
+import * as bodyPix from "@tensorflow-models/body-pix";
 const Participants = (props) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -63,8 +64,13 @@ const Participants = (props) => {
       navigator.userAgent.indexOf("FxiOS") === -1
     );
   };
+
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     // Use MediaPipe to get segmentation mask
+    if (isSafari()) {
+      bdPixelWithParametersIos(videoRef, canvasRef);
+      return;
+    }
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     console.log(canvasRef, videoRef);
@@ -109,6 +115,42 @@ const Participants = (props) => {
     // Start the initial frame processing
     drawCanvas();
   };
+
+  const bdPixelWithParametersIos = async (videoRef, canvasRef) => {
+    // Use MediaPipe to get segmentation mask
+    canvasRef.width = videoRef.videoWidth;
+    canvasRef.height = videoRef.videoHeight;
+    console.log(canvasRef, videoRef);
+    const bodypixel = await bodyPix.load({
+      architecture: "MobileNetV1",
+      outputStride: 16,
+      multiplier: 0.75,
+      quantBytes: 2,
+    });
+    const drawCanvas = async () => {
+      const canvasCtx = canvasRef.getContext("2d");
+      if (videoRef.readyState < 2) {
+        requestAnimationFrame(drawCanvas);
+        return;
+      }
+      const segmentation = await bodypixel.segmentPerson(videoRef);
+      canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+      canvasCtx.drawImage(
+        segmentation,
+        0,
+        0,
+        canvasRef.width,
+        canvasRef.height
+      );
+      canvasCtx.globalCompositeOperation = "source-in";
+      canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+      canvasCtx.globalCompositeOperation = "source-over";
+      // Request the next animation frame
+      requestAnimationFrame(drawCanvas);
+    };
+    drawCanvas();
+  };
+      
 
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
