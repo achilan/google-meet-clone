@@ -34,19 +34,19 @@ const Participants = (props) => {
       if (props.participants[element].background) {
         const videoRefx = document.getElementById(`participantVideo${element}`);
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        canvasRef.classList.remove("background-disabled");
-        canvasRef.classList.add("background-enabled");
+        canvasRefx.classList.remove("background-disabled");
+        canvasRefx.classList.add("background-enabled");
         if (props.participants[element].className) {
-          canvasRef.classList.remove("background1", "background2", "background3")
-          canvasRef.classList.add(props.participants[element].className);
+          canvasRefx.classList.remove("background1", "background2", "background3")
+          canvasRefx.classList.add(props.participants[element].className);
         }
         setTimeout(() => {
           bdPixelWithParameters(videoRefx, canvasRefx);
         }, 1500);
       } else {
-        const canvasRef = document.getElementById(`participantCanvas${element}`);
-        canvasRef.classList.remove("background-enabled");
-        canvasRef.classList.add("background-disabled");
+        const canvasRefx = document.getElementById(`participantCanvas${element}`);
+        canvasRefx.classList.remove("background-enabled");
+        canvasRefx.classList.add("background-disabled");
       }
     }
     );
