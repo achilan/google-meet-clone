@@ -87,7 +87,7 @@ const Participants = (props) => {
       }
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
-          const segmentationMask = results.segmentationMask;  
+          const segmentationMask = results.segmentationMask;
           canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.drawImage(
             segmentationMask,
@@ -117,41 +117,55 @@ const Participants = (props) => {
   };
 
   const bdPixelWithParametersIos = async (videoRef, canvasRef) => {
-    // Use MediaPipe to get segmentation mask
+    const tempCanvas = document.createElement("canvas");
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCanvas.width = videoRef.videoWidth;
+    tempCanvas.height = videoRef.videoHeight;
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    console.log(canvasRef, videoRef);
-    const context = canvasRef.getContext("2d");
-    const tempCanvas = document.createElement("canvas");
-    const bodypixel = await bodyPix.load({
+    const blurRadius = 10;
+    const net = await bodyPix.load({
       architecture: "MobileNetV1",
       outputStride: 16,
       multiplier: 0.75,
       quantBytes: 2,
+      segmentationThreshold: 0.6,
+      internalResolution: "medium",
     });
-    const tempCtx = tempCanvas.getContext("2d");
-    const drawCanvas = async () => {
-      if (videoRef.readyState < 2) {
-        requestAnimationFrame(drawCanvas);
-        return;
-      }
-      const segmentation = await bodypixel.segmentPerson(videoRef);
+    const context = canvasRef.getContext("2d");
+    const drawMask = async () => {
+      const segmentation = await net.segmentPerson(videoRef,{
+        flipHorizontal: false,
+        internalResolution: "medium",
+        segmentationThreshold: 0.7,
+        maxDetections: 1,
+        scoreThreshold: 0.3,
+        nmsRadius: 20,
+        minKeypointScore: 0.3,
+        refineSteps: 10,
+      });
       const mask = bodyPix.toMask(segmentation);
-      tempCanvas.width = videoRef.videoWidth;
-      tempCanvas.height = videoRef.videoHeight;
-      
       tempCtx.putImageData(mask, 0, 0);
-      context.clearRect(0, 0, canvasRef.width, canvasRef.height);
-      context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
-      context.globalCompositeOperation = "source-in";
+      tempCtx.filter = `blur(${blurRadius}px)`; // set the blur
+      tempCtx.drawImage(
+        tempCanvas,
+        0,
+        0,
+      );
+      tempCtx.imageSmoothingEnabled = true;
       context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
-      context.globalCompositeOperation = "source-over";
-      // Request the next animation frame
-      requestAnimationFrame(drawCanvas);
+      context.save();
+      context.globalCompositeOperation = "destination-out";
+      context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
+      context.restore();
+      //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+      setTimeout(() => {
+        drawMask();
+      }, 1000 / 50);
     };
-    drawCanvas();
+    drawMask();
   };
-      
+
 
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
