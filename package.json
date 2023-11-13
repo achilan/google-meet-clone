@@ -6,6 +6,8 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "@mediapipe/pose": "^0.5.1675469404",
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
     "@tensorflow-models/body-pix": "^2.2.1",
     "@tensorflow/tfjs-backend-webgl": "^4.12.0",
     "@tensorflow/tfjs-converter": "^4.12.0",

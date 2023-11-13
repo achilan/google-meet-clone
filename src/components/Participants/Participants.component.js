@@ -5,21 +5,21 @@ import { Participant } from "./Participant/Participant.component";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
-import * as mpSelfieSegmentation from '@mediapipe/selfie_segmentation';
+import * as selfie_segmentation from "@mediapipe/selfie_segmentation";
 const Participants = (props) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
   const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
   useEffect(() => {
-    const selfieSegmentation = new mpSelfieSegmentation.SelfieSegmentation({
+    const segMentation = new selfie_segmentation.SelfieSegmentation({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-      
+
     });
-    selfieSegmentation.setOptions({
-      modelSelection: 1,
+    segMentation.setOptions({
+      modelSelection: 1
     });
-    setSelfieSegmentation(selfieSegmentation);
+    setSelfieSegmentation(segMentation);
   }, []);
   useEffect(() => {
     if (videoRef.current) {
@@ -36,14 +36,14 @@ const Participants = (props) => {
         const canvasRef = document.getElementById(`participantCanvas${element}`);
         canvasRef.classList.remove("background-disabled");
         canvasRef.classList.add("background-enabled");
-        if(props.participants[element].className){
+        if (props.participants[element].className) {
           canvasRef.classList.remove("background1", "background2", "background3")
           canvasRef.classList.add(props.participants[element].className);
         }
         setTimeout(() => {
           bdPixelWithParameters(videoRef, canvasRef);
         }, 1500);
-      }else{
+      } else {
         const canvasRef = document.getElementById(`participantCanvas${element}`);
         canvasRef.classList.remove("background-enabled");
         canvasRef.classList.add("background-disabled");
@@ -74,22 +74,17 @@ const Participants = (props) => {
         requestAnimationFrame(drawCanvas);
         return;
       }
-      // Start processing frames
-      //use captureStream safari
-      
       if (isSafari()) {
-        const stream = canvasRef.captureStream();
-        videoRef.srcObject = stream;
+        await SelfieSegmentation.send({ image: videoRef });
+      } else {
+        await SelfieSegmentation.send({ image: videoRef });
       }
-      await SelfieSegmentation.send({ image: videoRef });
-  
-      // Set up the onResults callback
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
-         // const smoothedMask = applySmoothing(results.segmentationMask)
+          const segmentationMask = results.segmentationMask;  
           canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.drawImage(
-            results.segmentationMask,
+            segmentationMask,
             0,
             0,
             canvasRef.width,
@@ -106,14 +101,15 @@ const Participants = (props) => {
           canvasCtx.globalCompositeOperation = "source-over";
         }
       });
-  
+
       // Request the next animation frame
       requestAnimationFrame(drawCanvas);
     };
-  
+
     // Start the initial frame processing
     drawCanvas();
   };
+
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
     : null;
