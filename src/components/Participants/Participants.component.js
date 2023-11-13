@@ -37,7 +37,7 @@ const Participants = (props) => {
         canvasRefx.classList.remove("background-disabled");
         canvasRefx.classList.add("background-enabled");
         if (props.participants[element].className) {
-          canvasRefx.classList.remove("background1", "background2", "background3")
+          canvasRefx.classList.remove("background1", "background2", "background3", "background4")
           canvasRefx.classList.add(props.participants[element].className);
         }
         setTimeout(() => {
@@ -68,17 +68,14 @@ const Participants = (props) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
+    SelfieSegmentation.reset();
     const drawCanvas = async () => {
       const canvasCtx = canvasRef.getContext("2d");
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
       }
-      if (isSafari()) {
-        await SelfieSegmentation.send({ image: videoRef });
-      } else {
-        await SelfieSegmentation.send({ image: videoRef });
-      }
+      await SelfieSegmentation.send({ image: videoRef });
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
           const segmentationMask = results.segmentationMask;
