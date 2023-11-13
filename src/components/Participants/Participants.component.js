@@ -121,30 +121,31 @@ const Participants = (props) => {
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     console.log(canvasRef, videoRef);
+    const context = canvasRef.getContext("2d");
+    const tempCanvas = document.createElement("canvas");
     const bodypixel = await bodyPix.load({
       architecture: "MobileNetV1",
       outputStride: 16,
       multiplier: 0.75,
       quantBytes: 2,
     });
+    const tempCtx = tempCanvas.getContext("2d");
     const drawCanvas = async () => {
-      const canvasCtx = canvasRef.getContext("2d");
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
       }
       const segmentation = await bodypixel.segmentPerson(videoRef);
-      canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-      canvasCtx.drawImage(
-        segmentation,
-        0,
-        0,
-        canvasRef.width,
-        canvasRef.height
-      );
-      canvasCtx.globalCompositeOperation = "source-in";
-      canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
-      canvasCtx.globalCompositeOperation = "source-over";
+      const mask = bodyPix.toMask(segmentation);
+      tempCanvas.width = videoRef.videoWidth;
+      tempCanvas.height = videoRef.videoHeight;
+      
+      tempCtx.putImageData(mask, 0, 0);
+      context.clearRect(0, 0, canvasRef.width, canvasRef.height);
+      context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
+      context.globalCompositeOperation = "source-in";
+      context.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+      context.globalCompositeOperation = "source-over";
       // Request the next animation frame
       requestAnimationFrame(drawCanvas);
     };
