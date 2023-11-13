@@ -99,11 +99,8 @@ const Participants = (props) => {
           );
         }
       });
-      // Request the next animation frame
       requestAnimationFrame(drawCanvas);
     };
-
-    // Start the initial frame processing
     drawCanvas();
   };
   const currentUser = props.currentUser
