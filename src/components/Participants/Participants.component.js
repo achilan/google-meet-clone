@@ -31,10 +31,9 @@ const Participants = (props) => {
   const enableBackground = () => {
     const participantList = Object.keys(props.participants);
     participantList.forEach((element) => {
-      console.log(element)
       if (props.participants[element].background) {
-        const videoRef = document.getElementById(`participantVideo${element}`);
-        const canvasRef = document.getElementById(`participantCanvas${element}`);
+        const videoRefx = document.getElementById(`participantVideo${element}`);
+        const canvasRefx = document.getElementById(`participantCanvas${element}`);
         canvasRef.classList.remove("background-disabled");
         canvasRef.classList.add("background-enabled");
         if (props.participants[element].className) {
@@ -42,7 +41,7 @@ const Participants = (props) => {
           canvasRef.classList.add(props.participants[element].className);
         }
         setTimeout(() => {
-          bdPixelWithParameters(videoRef, canvasRef);
+          bdPixelWithParameters(videoRefx, canvasRefx);
         }, 1500);
       } else {
         const canvasRef = document.getElementById(`participantCanvas${element}`);
