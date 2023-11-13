@@ -12,6 +12,7 @@ const Participants = (props) => {
   const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
   const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
+  const [net, setNet] = useState(null);
   useEffect(() => {
     const segMentation = new selfie_segmentation.SelfieSegmentation({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
@@ -21,7 +22,17 @@ const Participants = (props) => {
       modelSelection: 1
     });
     setSelfieSegmentation(segMentation);
+    initBodyPix();
   }, []);
+  const initBodyPix = async () => {
+    const net = await bodyPix.load({
+      architecture: "MobileNetV1",
+      outputStride: 16,
+      multiplier: 0.75,
+      quantBytes: 2,
+    });
+    setNet(net);
+  }
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
@@ -123,15 +134,6 @@ const Participants = (props) => {
     tempCanvas.height = videoRef.videoHeight;
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    const blurRadius = 10;
-    const net = await bodyPix.load({
-      architecture: "MobileNetV1",
-      outputStride: 16,
-      multiplier: 0.75,
-      quantBytes: 2,
-      segmentationThreshold: 0.6,
-      internalResolution: "medium",
-    });
     const context = canvasRef.getContext("2d");
     const drawMask = async () => {
       const segmentation = await net.segmentPerson(videoRef,{
@@ -146,7 +148,6 @@ const Participants = (props) => {
       });
       const mask = bodyPix.toMask(segmentation);
       tempCtx.putImageData(mask, 0, 0);
-      tempCtx.filter = `blur(${blurRadius}px)`; // set the blur
       tempCtx.drawImage(
         tempCanvas,
         0,
@@ -158,10 +159,8 @@ const Participants = (props) => {
       context.globalCompositeOperation = "destination-out";
       context.drawImage(tempCanvas, 0, 0, canvasRef.width, canvasRef.height);
       context.restore();
-      //tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-      setTimeout(() => {
-        drawMask();
-      }, 1000 / 50);
+      tempCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+      requestAnimationFrame(drawMask);
     };
     drawMask();
   };
