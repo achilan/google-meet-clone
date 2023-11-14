@@ -15,7 +15,6 @@
     position: absolute;
     border-radius: 5px;
     min-height: 200px;
-    z-index: 999999;
   }
   .background-disabled{
     display: none;

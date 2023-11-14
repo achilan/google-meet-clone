@@ -54,13 +54,42 @@ const Participants = (props) => {
   useEffect(() => {
     enableBackground();
   }, [props.participants]);
+
+  const getUrlfromDom = (a) => {
+
+    if (a) {
+      // Get the computed style of the element
+      const computedStyle = window.getComputedStyle(a);
+
+      // Extract the background image URL from the computed style
+      const backgroundImage = computedStyle.getPropertyValue('background-image');
+
+      // Extract the URL from the background image property
+      const backgroundImageUrl = backgroundImage.match(/url\("(.+)"\)/);
+
+      if (backgroundImageUrl && backgroundImageUrl[1]) {
+        // The background image URL is in backgroundImageUrl[1]
+        return backgroundImageUrl[1];
+      } else {
+        return null;
+      }
+    } else {
+      console.log('Element with ID "my-element" not found.');
+      return null;
+    }
+  }
+
   const bdPixelWithParameters = async (videoRef, canvasRef) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
+    const background = getUrlfromDom(canvasRef);
+    const image = new Image();
+    image.src = background;
+    console.log("image", image)
     const drawCanvas = async () => {
-      
+
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
@@ -77,6 +106,18 @@ const Participants = (props) => {
             canvasRef.width,
             canvasRef.height
           );
+          if (image.complete) {
+            canvasCtx.globalCompositeOperation = "source-in";
+            canvasCtx.drawImage(
+              image,
+              0,
+              0,
+              canvasRef.width,
+              canvasRef.height
+            );
+            
+          }
+
           canvasCtx.globalCompositeOperation = "source-out";
           canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.globalCompositeOperation = "destination-atop";
