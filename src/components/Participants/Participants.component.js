@@ -85,10 +85,10 @@ const Participants = (props) => {
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
-    const image = new Image();
-    image.src = className;
-    const drawCanvas = async () => {
 
+    const drawCanvas = async () => {
+      const image = new Image();
+      image.src = className;
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
