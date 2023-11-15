@@ -24,19 +24,19 @@ const MeetingFooter = (props) => {
   const backgrounds = [
     {
       name: "background1",
-      className: "background1"
+      className: "https://ieced.com.ec/assets/bg1.jpg"
     },
     {
       name: "background2",
-      className: "background2"
+      className: "https://ieced.com.ec/assets/videollamada/1.jpg"
     },
     {
       name: "background3",
-      className: "background3"
+      className: "https://ieced.com.ec/assets/videollamada/2.jpg"
     },
     {
       name: "background4",
-      className: "background4"
+      className: "https://ieced.com.ec/assets/videollamada/3.jpg"
     },
   ];
   const [open, setOpen] = useState(false);

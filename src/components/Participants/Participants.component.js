@@ -36,12 +36,13 @@ const Participants = (props) => {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         canvasRefx.classList.remove("background-disabled");
         canvasRefx.classList.add("background-enabled");
-        if (props.participants[element].className) {
+/*         if (props.participants[element].className) {
           canvasRefx.classList.remove("background1", "background2", "background3", "background4")
           canvasRefx.classList.add(props.participants[element].className);
-        }
+        } */
+        const className = props.participants[element].className;
         setTimeout(() => {
-          bdPixelWithParameters(videoRefx, canvasRefx);
+          bdPixelWithParameters(videoRefx, canvasRefx, className);
         }, 1500);
       } else {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
@@ -79,22 +80,19 @@ const Participants = (props) => {
     }
   }
 
-  const bdPixelWithParameters = async (videoRef, canvasRef) => {
+  const bdPixelWithParameters = async (videoRef, canvasRef, className) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
-   
+    const image = new Image();
+    image.src = className;
     const drawCanvas = async () => {
 
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
       }
-      const background = getUrlfromDom(canvasRef);
-      const image = new Image();
-      image.src = background;
-      //console.log("image", image)
       await SelfieSegmentation.send({ image: videoRef });
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
@@ -117,7 +115,9 @@ const Participants = (props) => {
               canvasRef.height
             );
             
-          }
+          } 
+          //canvasCtx.globalCompositeOperation = "source-out";
+          //canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.globalCompositeOperation = "destination-atop";
           canvasCtx.drawImage(
             results.image,
