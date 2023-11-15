@@ -84,16 +84,17 @@ const Participants = (props) => {
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
-    const background = getUrlfromDom(canvasRef);
-    const image = new Image();
-    image.src = background;
-    console.log("image", image)
+   
     const drawCanvas = async () => {
 
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
       }
+      const background = getUrlfromDom(canvasRef);
+      const image = new Image();
+      image.src = background;
+      //console.log("image", image)
       await SelfieSegmentation.send({ image: videoRef });
       SelfieSegmentation.onResults(async (results) => {
         if (results.segmentationMask) {
@@ -107,7 +108,7 @@ const Participants = (props) => {
             canvasRef.height
           );
           if (image.complete) {
-            canvasCtx.globalCompositeOperation = "source-in";
+            canvasCtx.globalCompositeOperation = "source-out";
             canvasCtx.drawImage(
               image,
               0,
@@ -117,9 +118,6 @@ const Participants = (props) => {
             );
             
           }
-
-          canvasCtx.globalCompositeOperation = "source-out";
-          canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.globalCompositeOperation = "destination-atop";
           canvasCtx.drawImage(
             results.image,
