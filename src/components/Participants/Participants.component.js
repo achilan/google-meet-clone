@@ -85,10 +85,9 @@ const Participants = (props) => {
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
-
+    const image = new Image();
+    image.src = className;
     const drawCanvas = async () => {
-      const image = new Image();
-      image.src = className;
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
@@ -115,7 +114,18 @@ const Participants = (props) => {
               canvasRef.height
             );
             
-          } 
+          }else{
+            image.onload = () => {
+              canvasCtx.globalCompositeOperation = "source-out";
+              canvasCtx.drawImage(
+                image,
+                0,
+                0,
+                canvasRef.width,
+                canvasRef.height
+              );
+            }
+          }
           //canvasCtx.globalCompositeOperation = "source-out";
           //canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.globalCompositeOperation = "destination-atop";
