@@ -41,8 +41,10 @@ const Participants = (props) => {
           canvasRefx.classList.add(props.participants[element].className);
         } */
         const className = props.participants[element].className;
+        const image = document.getElementById(`imageCanvas${element}`);  
+        image.src = className;
         setTimeout(() => {
-          bdPixelWithParameters(videoRefx, canvasRefx, className);
+          mediapipeSegmentation(videoRefx, canvasRefx, image);
         }, 1500);
       } else {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
@@ -80,13 +82,11 @@ const Participants = (props) => {
     }
   }
 
-  const bdPixelWithParameters = async (videoRef, canvasRef, className) => {
+  const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
     // Use MediaPipe to get segmentation mask
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     const canvasCtx = canvasRef.getContext("2d");
-    const image = new Image();
-    image.src = className;
     const drawCanvas = async () => {
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
