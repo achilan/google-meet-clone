@@ -128,6 +128,7 @@ const MeetingFooter = (props) => {
               onClick={() => {
                 if(!streamState.video){
                   alert("Activa tu video para poder cambiar el fondo");
+                  return;
                 }
                 onChangeBackgroundPictureFooter(background.className);
                 onChangeBackgroundFooter(true);

@@ -36,10 +36,6 @@ const Participants = (props) => {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         canvasRefx.classList.remove("background-disabled");
         canvasRefx.classList.add("background-enabled");
-/*         if (props.participants[element].className) {
-          canvasRefx.classList.remove("background1", "background2", "background3", "background4")
-          canvasRefx.classList.add(props.participants[element].className);
-        } */
         const className = props.participants[element].className;
         const image = document.getElementById(`imageCanvas${element}`);  
         image.src = className;
@@ -126,8 +122,6 @@ const Participants = (props) => {
               );
             }
           }
-          //canvasCtx.globalCompositeOperation = "source-out";
-          //canvasCtx.fillRect(0, 0, canvasRef.width, canvasRef.height);
           canvasCtx.globalCompositeOperation = "destination-atop";
           canvasCtx.drawImage(
             results.image,
