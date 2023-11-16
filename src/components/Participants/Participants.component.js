@@ -46,6 +46,8 @@ const Participants = (props) => {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         canvasRefx.classList.remove("background-enabled");
         canvasRefx.classList.add("background-disabled");
+        const image = document.getElementById(`imageCanvas${element}`);
+        image.src = "";
       }
     }
     );
@@ -54,29 +56,6 @@ const Participants = (props) => {
     enableBackground();
   }, [props.participants]);
 
-  const getUrlfromDom = (a) => {
-
-    if (a) {
-      // Get the computed style of the element
-      const computedStyle = window.getComputedStyle(a);
-
-      // Extract the background image URL from the computed style
-      const backgroundImage = computedStyle.getPropertyValue('background-image');
-
-      // Extract the URL from the background image property
-      const backgroundImageUrl = backgroundImage.match(/url\("(.+)"\)/);
-
-      if (backgroundImageUrl && backgroundImageUrl[1]) {
-        // The background image URL is in backgroundImageUrl[1]
-        return backgroundImageUrl[1];
-      } else {
-        return null;
-      }
-    } else {
-      console.log('Element with ID "my-element" not found.');
-      return null;
-    }
-  }
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
     // Use MediaPipe to get segmentation mask

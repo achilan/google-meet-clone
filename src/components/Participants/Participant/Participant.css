@@ -20,6 +20,9 @@
     .canvas{
       object-fit: contain;
     }
+    .video {
+      object-fit: contain;
+    }
   }
   .background-disabled{
     display: none;
