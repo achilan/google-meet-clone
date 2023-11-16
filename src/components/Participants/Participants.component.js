@@ -110,17 +110,6 @@ const Participants = (props) => {
               canvasRef.height
             );
             
-          }else{
-            image.onload = () => {
-              canvasCtx.globalCompositeOperation = "source-out";
-              canvasCtx.drawImage(
-                image,
-                0,
-                0,
-                canvasRef.width,
-                canvasRef.height
-              );
-            }
           }
           canvasCtx.globalCompositeOperation = "destination-atop";
           canvasCtx.drawImage(
