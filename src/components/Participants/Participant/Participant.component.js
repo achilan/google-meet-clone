@@ -36,6 +36,10 @@ export const Participant = (props) => {
             className={`canvas`}
             id={`participantCanvas${curentIndex}`}
           ></canvas>
+        <img 
+          className="none-img"
+          id={`imageCanvas${curentIndex}`}
+        />
         {!currentParticipant.audio && (
           <FontAwesomeIcon
             className="muted"

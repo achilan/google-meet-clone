@@ -126,6 +126,9 @@ const MeetingFooter = (props) => {
               key={background.name}
               className={`background-selection ${background.name} ${streamState.className === background.className ? "active-background" : ""}`}
               onClick={() => {
+                if(!streamState.video){
+                  alert("Activa tu video para poder cambiar el fondo");
+                }
                 onChangeBackgroundPictureFooter(background.className);
                 onChangeBackgroundFooter(true);
                 //onCloseModal();

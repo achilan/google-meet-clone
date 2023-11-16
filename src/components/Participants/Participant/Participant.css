@@ -16,6 +16,11 @@
     border-radius: 5px;
     min-height: 200px;
   }
+  @media screen and (max-width: 800px) {
+    .canvas{
+      object-fit: contain;
+    }
+  }
   .background-disabled{
     display: none;
   }
@@ -46,6 +51,9 @@
     position: relative;
     border-radius: 5px;
     min-height: 200px
+  }
+  .none-img {
+    display: none;
   }
 
   .muted {
