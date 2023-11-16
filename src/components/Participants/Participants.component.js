@@ -59,9 +59,10 @@ const Participants = (props) => {
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
     // Use MediaPipe to get segmentation mask
+    const canvasCtx = canvasRef.getContext("2d");
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
-    const canvasCtx = canvasRef.getContext("2d");
+    
     const drawCanvas = async () => {
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
