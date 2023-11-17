@@ -155,14 +155,14 @@ const MeetingFooter = (props) => {
       >
         <FontAwesomeIcon icon={!streamState.video ? faVideoSlash : faVideo} />
       </div>
-      <div
+     {/*  <div
         className="meeting-icons"
         data-tip="Share Screen"
         onClick={onScreenClick}
         disabled={streamState.screen}
       >
         <FontAwesomeIcon icon={faDesktop} />
-      </div>
+      </div> */}
       <ReactTooltip />
     </div>
   );
