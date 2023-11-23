@@ -13,6 +13,7 @@ var firepadRef = firebase.database().ref();
 const urlparams = new URLSearchParams(window.location.search);
 const roomId = urlparams.get("id");
 const name = urlparams.get("name");
+const ishost = urlparams.get("host");
 export const userName = name? name : prompt("Ingresa tu nombre");
 
 if (roomId) {
@@ -21,5 +22,7 @@ if (roomId) {
   firepadRef = firepadRef.push();
   window.history.replaceState(null, "Meet", "?id=" + firepadRef.key);
 }
-
+if (ishost) {
+  firepadRef.child("host").set(userName);
+}
 export default firepadRef;
