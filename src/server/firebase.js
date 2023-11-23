@@ -10,10 +10,10 @@ firebase.initializeApp(firebaseConfig);
 export const db = firebase;
 
 var firepadRef = firebase.database().ref();
-
-export const userName = prompt("What's your name?");
 const urlparams = new URLSearchParams(window.location.search);
 const roomId = urlparams.get("id");
+const name = urlparams.get("name");
+export const userName = name? name : prompt("Ingresa tu nombre");
 
 if (roomId) {
   firepadRef = firepadRef.child(roomId);
