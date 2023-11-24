@@ -1,7 +1,7 @@
 
 
   .video{
-    background-color: #353b48;
+    background-color: #E3DAC1;
     height: 100%;
     width: 100%;
     position: relative;
@@ -9,7 +9,7 @@
     border-radius: 5px;
   }
   .canvas{
-    background-color: #353b48;
+    background-color: #E3DAC1;
     height: 100%;
     width: 100%;
     position: absolute;
@@ -48,7 +48,7 @@
   }
 
   .participant {
-    background-color: #353b48;
+    background-color: #E3DAC1;
     height: 100%;
     width: 100%;
     position: relative;

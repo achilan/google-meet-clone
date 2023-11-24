@@ -54,6 +54,43 @@ const Participants = (props) => {
   }
   useEffect(() => {
     enableBackground();
+    //validation for cronometer
+    const participantList = Object.keys(props.participants);
+    var minutes = 0;
+    var seconds = 0;
+    var hours = 0;
+    if (participantList.length === 2) {
+
+    
+      const updateCronometer = () => {
+        seconds++;
+        if (seconds === 60) {
+          seconds = 0;
+          minutes++;
+          if (minutes === 60) {
+            minutes = 0;
+            hours++;
+          }
+        }
+    
+        // Format the variables as strings with leading zeros if needed
+        const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
+        const formattedHours = hours < 10 ? "0" + hours : hours;
+    
+        // Display the formatted time in the HTML element with id "cronometer"
+        document.getElementById("cronometer").innerHTML =
+          formattedHours + ":" + formattedMinutes + ":" + formattedSeconds;
+      };
+    
+      // Call the updateCronometer function every 1000 milliseconds (1 second)
+      setInterval(updateCronometer, 1000);
+    }else{
+      document.getElementById("cronometer").innerHTML = "00:00:00";
+      minutes = 0;
+      seconds = 0;
+      hours = 0;
+    }
   }, [props.participants]);
 
 

@@ -16,11 +16,6 @@ export const Participant = (props) => {
     canvasRef
   } = props;
   if (!currentParticipant) return <></>;
-  const randomBackground = () => {
-    const classes = ["background1", "background1", "background1"];
-    const random = Math.floor(Math.random() * 3);
-    return classes[random];
-  }
   return (
     <div className={`participant ${hideVideo ? "hide" : ""}`}>
       <Card>

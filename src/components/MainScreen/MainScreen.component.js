@@ -88,6 +88,10 @@ const MainScreen = (props) => {
       await props.updateUser({ className: className });
     }
   }
+  const endTransmission = () => {
+    //exit meeting
+    window.location.href = "https://zeehire.com/";
+  }
   return (
     <div className="wrapper">
       <div className="main-screen">
@@ -101,6 +105,7 @@ const MainScreen = (props) => {
           onVideoClick={onVideoClick}
           onChangeBackground={onChangeBackground}
           onChangeBackgroundPicture={onChangeBackgroundPicture}
+          onEndTransmission={endTransmission}
         />
       </div>
     </div>

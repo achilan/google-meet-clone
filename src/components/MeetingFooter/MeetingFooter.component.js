@@ -7,7 +7,8 @@ import {
   faVideoSlash,
   faMicrophoneSlash,
   faImage,
-  faBan
+  faBan,
+  faPhoneSlash
 } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import "./MeetingFooter.css";
@@ -19,7 +20,7 @@ const MeetingFooter = (props) => {
     video: false,
     screen: false,
     background: false,
-    className: "",
+    className: ""
   });
   const backgrounds = [
     {
@@ -104,6 +105,9 @@ const MeetingFooter = (props) => {
   }, [streamState.className]);
   return (
     <div className="meeting-footer">
+      <div className="cronometer" id="cronometer">
+        00:00
+      </div>
       <div className={"meeting-icons " + (streamState.background ? "active" : "")} data-tip="Change Background" onClick={openModalBackground} >
         <FontAwesomeIcon icon={faImage} />
       </div>
@@ -155,14 +159,15 @@ const MeetingFooter = (props) => {
       >
         <FontAwesomeIcon icon={!streamState.video ? faVideoSlash : faVideo} />
       </div>
-     {/*  <div
-        className="meeting-icons"
-        data-tip="Share Screen"
-        onClick={onScreenClick}
-        disabled={streamState.screen}
+      {/* here end transmission */}
+      <div
+        className="meeting-icons active"
+        data-tip={"End Transmission"}
+        onClick={props.onEndTransmission}
       >
-        <FontAwesomeIcon icon={faDesktop} />
-      </div> */}
+        <FontAwesomeIcon icon={faPhoneSlash} />
+      </div>
+
       <ReactTooltip />
     </div>
   );
