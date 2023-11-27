@@ -38,7 +38,7 @@ const MeetingFooter = (props) => {
     {
       name: "background4",
       className: "https://ieced.com.ec/assets/videollamada/3.jpg"
-    },
+    }
   ];
   const [open, setOpen] = useState(false);
   const micClick = () => {
