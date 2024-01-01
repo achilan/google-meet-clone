@@ -29,7 +29,7 @@ function App(props) {
   };
   useEffect(async () => {
     const stream = await getUserStream();
-    stream.getVideoTracks()[0]?enabled = false;
+    stream.getVideoTracks()[0]?.enabled = false;
     props.setMainStream(stream);
     connectedRef.on("value", (snap) => {
       if (snap.val()) {
