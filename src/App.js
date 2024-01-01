@@ -12,31 +12,24 @@ import {
 import { connect } from "react-redux";
 
 function App(props) {
-  const setPermissionCamera = async () => {
-    navigator.permissions.query({ name: "camera" }).then((permissionStatus) => {
-      console.log("camera permission state is ", permissionStatus.state);
-      permissionStatus.onchange = function () {
-        console.log("camera permission state has changed to ", this.state);
-      };
-    });
-  };
   const getUserStream = async () => {
     try {
-      const localStream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: {
-          width: 1280,
-          height: 720,
-        },
+        video: true,
       });
-      return localStream;
+      return stream;
     } catch (err) {
-      return null;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+      return stream;
     }
   };
   useEffect(async () => {
-    await setPermissionCamera();
     const stream = await getUserStream();
+    stream.getVideoTracks()[0]?enabled = false;
     props.setMainStream(stream);
     connectedRef.on("value", (snap) => {
       if (snap.val()) {
