@@ -27,14 +27,18 @@ function App(props) {
     });
   };
   const getUserStream = async () => {
-    const localStream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: {
-        width: 1280,
-        height: 720,
-      },
-    });
-    return localStream;
+    try {
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: {
+          width: 1280,
+          height: 720,
+        },
+      });
+      return localStream;
+    } catch (err) {
+      return null;
+    }
   };
   useEffect(async () => {
     await setPermissionCamera();
