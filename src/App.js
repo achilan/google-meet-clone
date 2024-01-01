@@ -13,16 +13,10 @@ import { connect } from "react-redux";
 
 function App(props) {
   const setPermissionCamera = async () => {
-    navigator.permissions.query({ name: "camera" }).then((result) => {
-      if (result.state === "granted") {
-        console.log("Permission granted");
-      } else if (result.state === "prompt") {
-        console.log("Prompting user for permission");
-      } else if (result.state === "denied") {
-        console.log("Permission denied");
-      }
-      result.onchange = function () {
-        console.log(result.state);
+    navigator.permissions.query({ name: "camera" }).then((permissionStatus) => {
+      console.log("camera permission state is ", permissionStatus.state);
+      permissionStatus.onchange = function () {
+        console.log("camera permission state has changed to ", this.state);
       };
     });
   };
@@ -43,7 +37,7 @@ function App(props) {
   useEffect(async () => {
     await setPermissionCamera();
     const stream = await getUserStream();
-    if(stream){
+    if (stream) {
       stream.getVideoTracks()[0].enabled = false;
     }
     props.setMainStream(stream);
