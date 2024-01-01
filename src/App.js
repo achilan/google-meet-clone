@@ -12,17 +12,32 @@ import {
 import { connect } from "react-redux";
 
 function App(props) {
+  const setPermissionCamera = async () => {
+    navigator.permissions.query({ name: "camera" }).then((result) => {
+      if (result.state === "granted") {
+        console.log("Permission granted");
+      } else if (result.state === "prompt") {
+        console.log("Prompting user for permission");
+      } else if (result.state === "denied") {
+        console.log("Permission denied");
+      }
+      result.onchange = function () {
+        console.log(result.state);
+      };
+    });
+  };
   const getUserStream = async () => {
     const localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: {
         width: 1280,
         height: 720,
-      }
+      },
     });
     return localStream;
   };
   useEffect(async () => {
+    await setPermissionCamera();
     const stream = await getUserStream();
     stream.getVideoTracks()[0].enabled = false;
     props.setMainStream(stream);
