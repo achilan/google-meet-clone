@@ -43,7 +43,9 @@ function App(props) {
   useEffect(async () => {
     await setPermissionCamera();
     const stream = await getUserStream();
-    stream.getVideoTracks()[0].enabled = false;
+    if(stream){
+      stream.getVideoTracks()[0].enabled = false;
+    }
     props.setMainStream(stream);
     connectedRef.on("value", (snap) => {
       if (snap.val()) {
