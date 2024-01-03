@@ -8,13 +8,16 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const db = firebase;
-
+const generaterandomname = () => {
+  const randomnumber = Math.floor(Math.random() * 1000);
+  return "user" + randomnumber;
+}
 var firepadRef = firebase.database().ref();
 const urlparams = new URLSearchParams(window.location.search);
 const roomId = urlparams.get("id");
 const name = urlparams.get("name");
 const ishost = urlparams.get("host");
-export const userName = name? name : prompt("Ingresa tu nombre");
+export const userName = name? name : generaterandomname();
 
 if (roomId) {
   firepadRef = firepadRef.child(roomId);
