@@ -14,7 +14,7 @@ const generaterandomname = () => {
 }
 var firepadRef = firebase.database().ref();
 const urlparams = new URLSearchParams(window.location.search);
-const roomId = urlparams.get("id");
+const roomId = urlparams.get("id") || urlparams.get("cid");
 const name = urlparams.get("name");
 const ishost = urlparams.get("host");
 export const userName = name? name : generaterandomname();
