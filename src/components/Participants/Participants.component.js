@@ -34,6 +34,9 @@ const Participants = (props) => {
     gridCol = 1;
     gridRowSize = 2;
   }
+  if(participantKey.length === 2){
+    setInterval(updateCronometer, 1000);
+  }
   const participants = participantKey.map((element, index) => {
     const currentParticipant = props.participants[element];
     const isCurrentUser = currentParticipant.currentUser;
@@ -69,6 +72,15 @@ const Participants = (props) => {
       />
     );
   });
+  const updateCronometer = () => {
+    const cronometer = document.getElementById("cronometer");
+    if (cronometer) {
+      const date = new Date();
+      const minutes = date.getMinutes();
+      const seconds = date.getSeconds();
+      cronometer.textContent = `${minutes}:${seconds}`;
+    }
+  }
   return (
     <div
       style={{

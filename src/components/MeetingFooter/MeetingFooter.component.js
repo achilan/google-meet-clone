@@ -53,6 +53,9 @@ const MeetingFooter = (props) => {
   }, [streamState.video]);
   return (
     <div className="meeting-footer">
+      <div className="cronometer" id="cronometer">
+        00:00
+      </div>
       <div
         className={"meeting-icons " + (!streamState.mic ? "active" : "")}
         data-tip={streamState.mic ? "Mute Audio" : "Unmute Audio"}
