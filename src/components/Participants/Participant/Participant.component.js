@@ -12,8 +12,6 @@ export const Participant = (props) => {
     videoRef,
     showAvatar,
     currentUser,
-    background,
-    canvasRef
   } = props;
   if (!currentParticipant) return <></>;
   return (
@@ -26,15 +24,6 @@ export const Participant = (props) => {
           autoPlay
           playsInline
         ></video>
-          <canvas
-            ref={canvasRef}
-            className={`canvas`}
-            id={`participantCanvas${curentIndex}`}
-          ></canvas>
-        <img 
-          className="none-img"
-          id={`imageCanvas${curentIndex}`}
-        />
         {!currentParticipant.audio && (
           <FontAwesomeIcon
             className="muted"

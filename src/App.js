@@ -15,25 +15,22 @@ function App(props) {
   const getUserStream = async () => {
     const localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
-      video: {
-        width: 1280,
-        height: 720,
-      }
+      video: true,
     });
+
     return localStream;
   };
   useEffect(async () => {
     const stream = await getUserStream();
     stream.getVideoTracks()[0].enabled = false;
     props.setMainStream(stream);
+
     connectedRef.on("value", (snap) => {
       if (snap.val()) {
         const defaultPreference = {
           audio: true,
           video: false,
           screen: false,
-          background: false,
-          className: "",
         };
         const userStatusRef = participantRef.push({
           userName,
@@ -60,7 +57,6 @@ function App(props) {
           .child(snap.key)
           .child("preferences");
         preferenceUpdateEvent.on("child_changed", (preferenceSnap) => {
-          //console.log(preferenceSnap.val(), preferenceSnap.key);
           props.updateParticipant({
             [snap.key]: {
               [preferenceSnap.key]: preferenceSnap.val(),
@@ -92,7 +88,6 @@ const mapStateToProps = (state) => {
   return {
     stream: state.mainStream,
     user: state.currentUser,
-    background: state.background,
   };
 };
 

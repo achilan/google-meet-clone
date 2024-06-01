@@ -1,147 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import "./Participants.css";
 import { connect } from "react-redux";
 import { Participant } from "./Participant/Participant.component";
-import "@tensorflow/tfjs-core";
-import "@tensorflow/tfjs-converter";
-import "@tensorflow/tfjs-backend-webgl";
-import * as selfie_segmentation from "@mediapipe/selfie_segmentation";
-import * as bodyPix from "@tensorflow-models/body-pix";
+
 const Participants = (props) => {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
-  const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
-  useEffect(() => {
-    const segMentation = new selfie_segmentation.SelfieSegmentation({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
-
-    });
-    segMentation.setOptions({
-      modelSelection: 0
-    });
-    setSelfieSegmentation(segMentation);
-  }, []);
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = props.stream;
       videoRef.current.muted = true;
     }
   }, [props.currentUser, props.stream]);
-  const enableBackground = () => {
-    const participantList = Object.keys(props.participants);
-    participantList.forEach((element) => {
-      if (props.participants[element].background) {
-        const videoRefx = document.getElementById(`participantVideo${element}`);
-        const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        canvasRefx.classList.remove("background-disabled");
-        canvasRefx.classList.add("background-enabled");
-        const className = props.participants[element].className;
-        const image = document.getElementById(`imageCanvas${element}`);  
-        image.src = className;
-        setTimeout(() => {
-          mediapipeSegmentation(videoRefx, canvasRefx, image);
-        }, 1500);
-      } else {
-        const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        canvasRefx.classList.remove("background-enabled");
-        canvasRefx.classList.add("background-disabled");
-        const image = document.getElementById(`imageCanvas${element}`);
-        image.src = "";
-      }
-    }
-    );
-  }
-  useEffect(() => {
-    enableBackground();
-    //validation for cronometer
-    const participantList = Object.keys(props.participants);
-    var minutes = 0;
-    var seconds = 0;
-    var hours = 0;
-    if (participantList.length === 2) {
 
-    
-      const updateCronometer = () => {
-        seconds++;
-        if (seconds === 60) {
-          seconds = 0;
-          minutes++;
-          if (minutes === 60) {
-            minutes = 0;
-            hours++;
-          }
-        }
-    
-        // Format the variables as strings with leading zeros if needed
-        const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
-        const formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
-        const formattedHours = hours < 10 ? "0" + hours : hours;
-    
-        // Display the formatted time in the HTML element with id "cronometer"
-        document.getElementById("cronometer").innerHTML =
-          formattedHours + ":" + formattedMinutes + ":" + formattedSeconds;
-      };
-    
-      // Call the updateCronometer function every 1000 milliseconds (1 second)
-      setInterval(updateCronometer, 1000);
-    }else{
-      document.getElementById("cronometer").innerHTML = "00:00:00";
-      minutes = 0;
-      seconds = 0;
-      hours = 0;
-    }
-  }, [props.participants]);
-
-
-  const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
-    // Use MediaPipe to get segmentation mask
-    const canvasCtx = canvasRef.getContext("2d");
-    canvasRef.width = videoRef.videoWidth;
-    canvasRef.height = videoRef.videoHeight;
-    
-    const drawCanvas = async () => {
-      if (videoRef.readyState < 2) {
-        requestAnimationFrame(drawCanvas);
-        return;
-      }
-      await SelfieSegmentation.send({ image: videoRef });
-      SelfieSegmentation.onResults(async (results) => {
-        if (results.segmentationMask) {
-          const segmentationMask = results.segmentationMask;
-          canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-          canvasCtx.drawImage(
-            segmentationMask,
-            0,
-            0,
-            canvasRef.width,
-            canvasRef.height
-          );
-          if (image.complete) {
-            canvasCtx.globalCompositeOperation = "source-out";
-            canvasCtx.drawImage(
-              image,
-              0,
-              0,
-              canvasRef.width,
-              canvasRef.height
-            );
-            
-          }
-          canvasCtx.globalCompositeOperation = "destination-atop";
-          canvasCtx.drawImage(
-            results.image,
-            0,
-            0,
-            canvasRef.width,
-            canvasRef.height
-          );
-        }
-      });
-      requestAnimationFrame(drawCanvas);
-    };
-    drawCanvas();
-  };
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
     : null;
@@ -163,7 +34,6 @@ const Participants = (props) => {
     gridCol = 1;
     gridRowSize = 2;
   }
-  var backgroundperuser = false;
   const participants = participantKey.map((element, index) => {
     const currentParticipant = props.participants[element];
     const isCurrentUser = currentParticipant.currentUser;
@@ -172,7 +42,7 @@ const Participants = (props) => {
     }
     const pc = currentParticipant.peerConnection;
     const remoteStream = new MediaStream();
-    let curentIndex = element;
+    let curentIndex = index;
     if (pc) {
       pc.ontrack = (event) => {
         event.streams[0].getTracks().forEach((track) => {
@@ -181,13 +51,7 @@ const Participants = (props) => {
         const videElement = document.getElementById(
           `participantVideo${curentIndex}`
         );
-        const canvasElement = document.getElementById(
-          `participantCanvas${curentIndex}`
-        );
-        canvasRef.current = canvasElement;
-        if (videElement) {
-          videElement.srcObject = remoteStream
-        }
+        if (videElement) videElement.srcObject = remoteStream;
       };
     }
 
@@ -202,8 +66,6 @@ const Participants = (props) => {
           !currentParticipant.screen &&
           currentParticipant.name
         }
-        background={backgroundperuser}
-        canvasRef={canvasRef}
       />
     );
   });
@@ -219,13 +81,11 @@ const Participants = (props) => {
       {participants}
       <Participant
         currentParticipant={currentUser}
-        curentIndex={Object.keys(props.participants)[0]}
+        curentIndex={participantKey.length}
         hideVideo={screenPresenter && !currentUser.screen}
         videoRef={videoRef}
-        background={props.background}
         showAvatar={currentUser && !currentUser.video && !currentUser.screen}
         currentUser={true}
-        canvasRef={canvasRef}
       />
     </div>
   );
@@ -236,8 +96,6 @@ const mapStateToProps = (state) => {
     participants: state.participants,
     currentUser: state.currentUser,
     stream: state.mainStream,
-    background: state.background,
-    className: state.className
   };
 };
 

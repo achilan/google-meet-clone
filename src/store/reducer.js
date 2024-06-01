@@ -5,8 +5,6 @@ import {
   REMOVE_PARTICIPANT,
   UPDATE_USER,
   UPDATE_PARTICIPANT,
-  SET_BACKGROUND_STREAM,
-  SET_BACKGROUND_PICTURE,
 } from "./actiontypes";
 
 import {
@@ -19,8 +17,6 @@ let defaultUserState = {
   mainStream: null,
   participants: {},
   currentUser: null,
-  background: false,
-  className: "",
 };
 
 const servers = {
@@ -55,15 +51,13 @@ export const userReducer = (state = defaultUserState, action) => {
       payload.newUser = addConnection(
         payload.newUser,
         state.currentUser,
-        state.mainStream,
-        state.background
+        state.mainStream
       );
     }
-    if (currentUserId === newUserId)
-    payload.newUser[newUserId].currentUser = true;
-    payload.newUser[newUserId].avatarColor = generateColor();
-    /* payload.newUser[newUserId].background = state.background; */
 
+    if (currentUserId === newUserId)
+      payload.newUser[newUserId].currentUser = true;
+    payload.newUser[newUserId].avatarColor = generateColor();
     let participants = { ...state.participants, ...payload.newUser };
     state = { ...state, participants };
     return state;
@@ -72,8 +66,6 @@ export const userReducer = (state = defaultUserState, action) => {
     let participants = { ...state.participants };
     const userId = Object.keys(payload.currentUser)[0];
     payload.currentUser[userId].avatarColor = generateColor();
-    payload.currentUser[userId].background = state.background;
-    payload.currentUser[userId].className = state.className
     initializeListensers(userId);
     state = { ...state, currentUser: { ...payload.currentUser }, participants };
     return state;
@@ -90,10 +82,7 @@ export const userReducer = (state = defaultUserState, action) => {
     state.currentUser[userId] = {
       ...state.currentUser[userId],
       ...payload.currentUser,
-      ...state.background
     };
-    state.currentUser[userId].background = state.background;
-    state.participants[userId].className = state.className;
     state = {
       ...state,
       currentUser: { ...state.currentUser },
@@ -102,28 +91,19 @@ export const userReducer = (state = defaultUserState, action) => {
   } else if (action.type === UPDATE_PARTICIPANT) {
     let payload = action.payload;
     const newUserId = Object.keys(payload.newUser)[0];
+
     payload.newUser[newUserId] = {
       ...state.participants[newUserId],
       ...payload.newUser[newUserId],
-      ...state.background
     };
-    /* state.participants[newUserId].background = state.background; */
     let participants = { ...state.participants, ...payload.newUser };
     state = { ...state, participants };
-    return state;
-  } else if (action.type === SET_BACKGROUND_STREAM) {
-    let payload = action.payload;
-    state = { ...state, ...payload };
-    return state;
-  } else if (action.type === SET_BACKGROUND_PICTURE) {
-    let payload = action.payload;
-    state = { ...state, ...payload };
     return state;
   }
   return state;
 };
 
-const addConnection = (newUser, currentUser, stream, background) => {
+const addConnection = (newUser, currentUser, stream) => {
   const peerConnection = new RTCPeerConnection(servers);
   stream.getTracks().forEach((track) => {
     peerConnection.addTrack(track, stream);
@@ -137,6 +117,6 @@ const addConnection = (newUser, currentUser, stream, background) => {
 
   newUser[newUserId].peerConnection = peerConnection;
   if (offerIds[0] !== currentUserId)
-    createOffer(peerConnection, offerIds[0], offerIds[1], background);
+    createOffer(peerConnection, offerIds[0], offerIds[1]);
   return newUser;
 };

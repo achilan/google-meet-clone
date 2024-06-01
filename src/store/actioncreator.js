@@ -5,8 +5,6 @@ import {
   REMOVE_PARTICIPANT,
   UPDATE_USER,
   UPDATE_PARTICIPANT,
-  SET_BACKGROUND_STREAM,
-  SET_BACKGROUND_PICTURE,
 } from "./actiontypes";
 
 export const setMainStream = (stream) => {
@@ -18,22 +16,6 @@ export const setMainStream = (stream) => {
   };
 };
 
-export const setBackgroundStream = (stream) => {
-  return {
-    type: SET_BACKGROUND_STREAM,
-    payload: {
-      background: stream,
-    },
-  };
-};
-export const setBackgroundPicture = (className) => {
-  return {
-    type: SET_BACKGROUND_PICTURE,
-    payload: {
-      className: className,
-    },
-  };
-}
 export const setUser = (user) => {
   return {
     type: SET_USER,
