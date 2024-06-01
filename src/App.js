@@ -15,7 +15,10 @@ function App(props) {
   const getUserStream = async () => {
     const localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
-      video: true,
+      video: {
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      }
     });
 
     return localStream;

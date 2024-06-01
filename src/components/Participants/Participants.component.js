@@ -3,6 +3,9 @@ import "./Participants.css";
 import { connect } from "react-redux";
 import { Participant } from "./Participant/Participant.component";
 
+var minutes = 0;
+var seconds = 0;
+var hours = 0;
 const updateCronometer = () => {
   seconds++;
   if (seconds === 60) {
