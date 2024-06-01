@@ -153,6 +153,8 @@ const MeetingFooter = (props) => {
         />
       </div>
       <div className={"meeting-icons " + (streamState.screen ? "active" : "")} data-tip={streamState.screen ? "Stop Sharing" : "Start Sharing"} onClick={onScreenClick}>
+        <FontAwesomeIcon icon={faDesktop} />
+      </div>
       <div
         className={"meeting-icons " + (!streamState.video ? "active" : "")}
         data-tip={streamState.video ? "Hide Video" : "Show Video"}
