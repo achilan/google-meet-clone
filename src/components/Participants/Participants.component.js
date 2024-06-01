@@ -3,6 +3,26 @@ import "./Participants.css";
 import { connect } from "react-redux";
 import { Participant } from "./Participant/Participant.component";
 
+const updateCronometer = () => {
+  seconds++;
+  if (seconds === 60) {
+    seconds = 0;
+    minutes++;
+    if (minutes === 60) {
+      minutes = 0;
+      hours++;
+    }
+  }
+
+  // Format the variables as strings with leading zeros if needed
+  const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+  const formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
+  const formattedHours = hours < 10 ? "0" + hours : hours;
+
+  // Display the formatted time in the HTML element with id "cronometer"
+  document.getElementById("cronometer").innerHTML =
+    formattedHours + ":" + formattedMinutes + ":" + formattedSeconds;
+};
 const Participants = (props) => {
   const videoRef = useRef(null);
   let participantKey = Object.keys(props.participants);
@@ -72,15 +92,7 @@ const Participants = (props) => {
       />
     );
   });
-  const updateCronometer = () => {
-    const cronometer = document.getElementById("cronometer");
-    if (cronometer) {
-      const date = new Date();
-      const minutes = date.getMinutes();
-      const seconds = date.getSeconds();
-      cronometer.textContent = `${minutes}:${seconds}`;
-    }
-  }
+
   return (
     <div
       style={{
