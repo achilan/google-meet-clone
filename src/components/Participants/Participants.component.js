@@ -3,9 +3,9 @@ import "./Participants.css";
 import { connect } from "react-redux";
 import { Participant } from "./Participant/Participant.component";
 
-var minutes = 0;
-var seconds = 0;
-var hours = 0;
+let minutes = 0;
+let seconds = 0;
+let hours = 0;
 const updateCronometer = () => {
   seconds++;
   if (seconds === 60) {
@@ -58,6 +58,9 @@ const Participants = (props) => {
     gridRowSize = 2;
   }
   if(participantKey.length === 2){
+    minutes = 0;
+    seconds = 0;
+    hours = 0;
     setInterval(updateCronometer, 1000);
   }
   const participants = participantKey.map((element, index) => {
