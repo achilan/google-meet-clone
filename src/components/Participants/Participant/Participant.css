@@ -4,7 +4,7 @@
     height: 100%;
     width: 100%;
     position: relative;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 5px;
   }
   .canvas{
@@ -12,6 +12,7 @@
     height: 100%;
     width: 100%;
     position: absolute;
+    object-fit: contain;
     border-radius: 5px;
     min-height: 200px;
   }
