@@ -21,9 +21,11 @@ const Participants = (props) => {
       modelSelection: 0
     });
     setSelfieSegmentation(segMentation);
+    console.log('no error')
   }, []);
   useEffect(() => {
     if (videoRef.current) {
+      console.log('video current here')
       videoRef.current.srcObject = props.stream;
       videoRef.current.muted = true;
     }
