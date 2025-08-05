@@ -110,6 +110,7 @@ const Participants = (props) => {
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]
     : null;
+  console.log(currentUser,'current')
 
   let gridCol =
     participantKey.length === 1 ? 1 : participantKey.length <= 4 ? 2 : 4;
@@ -139,6 +140,7 @@ const Participants = (props) => {
     const remoteStream = new MediaStream();
     let curentIndex = element;
     if (pc) {
+      console.log(pc,'pc')
       pc.ontrack = (event) => {
         event.streams[0].getTracks().forEach((track) => {
           remoteStream.addTrack(track);
