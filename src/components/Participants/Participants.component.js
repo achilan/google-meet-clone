@@ -132,6 +132,7 @@ const Participants = (props) => {
   var backgroundperuser = false;
   const participants = participantKey.map((element, index) => {
     const currentParticipant = props.participants[element];
+    console.log(currentParticipant,'currentParticipant')
     const isCurrentUser = currentParticipant.currentUser;
     if (isCurrentUser) {
       return null;
