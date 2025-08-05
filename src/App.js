@@ -56,7 +56,9 @@ function App(props) {
   }, []);
 
   const connectedRef = db.database().ref(".info/connected");
+  console.log(connectedRef)
   const participantRef = firepadRef.child("participants");
+  console.log(participantRef)
 
   const isUserSet = !!props.user;
   const isStreamSet = !!props.stream;
