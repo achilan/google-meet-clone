@@ -29,6 +29,7 @@ function App(props) {
   };
   useEffect(async () => {
     const stream = await getUserStream();
+    console.log(stream);
     if (stream.getVideoTracks().length > 0) {
       stream.getVideoTracks()[0].enabled = false;
     }
