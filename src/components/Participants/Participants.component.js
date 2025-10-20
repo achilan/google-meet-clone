@@ -91,11 +91,10 @@ const Participants = (props) => {
         const className = participant.className;
         if (image && className) {
           image.onload = () => {
-            console.log('Image loaded successfully');
+            console.log('Image loaded successfully for background:', className);
             if (videoRefx && canvasRefx && image) {
-              setTimeout(() => {
-                mediapipeSegmentation(videoRefx, canvasRefx, image);
-              }, 1500);
+              // Start immediately when image loads
+              mediapipeSegmentation(videoRefx, canvasRefx, image);
             }
           };
           image.onerror = () => {
@@ -104,9 +103,8 @@ const Participants = (props) => {
           image.src = className;
         } else if (videoRefx && canvasRefx) {
           // If no background image, still run segmentation without background
-          setTimeout(() => {
-            mediapipeSegmentation(videoRefx, canvasRefx, null);
-          }, 1500);
+          console.log('Starting segmentation without background image');
+          mediapipeSegmentation(videoRefx, canvasRefx, null);
         }
       } else {
         // No background - draw video directly to canvas
@@ -153,6 +151,17 @@ const Participants = (props) => {
     
     return () => clearTimeout(timeoutId);
   }, [props.currentUser?.video, props.background]);
+
+  // Monitor background image changes for current user only
+  useEffect(() => {
+    if (props.className && props.background && props.currentUser) {
+      console.log('Background image changed to:', props.className);
+      // Force background update only for current user, not all participants
+      setTimeout(() => {
+        handleCurrentUserCanvas();
+      }, 100);
+    }
+  }, [props.className]);
 
   const handleCurrentUserCanvas = () => {
     if (!props.currentUser) return;
