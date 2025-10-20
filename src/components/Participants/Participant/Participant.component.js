@@ -53,19 +53,18 @@ export const Participant = (props) => {
   
   if (!currentParticipant) return <></>;
   
-  // For current user, check if video is disabled OR if video element has no stream
-  const isVideoDisabled = currentUser && (!currentParticipant.video || 
-    (videoRef && videoRef.current && !videoRef.current.srcObject));
+  // For current user, check if video is disabled - simplified logic
+  const isVideoDisabled = currentUser && !currentParticipant.video;
   
   // Debug log for mobile troubleshooting
-  if (currentUser) {
-    console.log('Participant debug:', {
-      video: currentParticipant.video,
-      hasVideoRef: !!videoRef,
-      hasSrcObject: videoRef && videoRef.current ? !!videoRef.current.srcObject : false,
-      isVideoDisabled
-    });
-  }
+  console.log('Participant debug:', {
+    currentUser,
+    participantName: currentParticipant.name,
+    video: currentParticipant.video,
+    hasVideoRef: !!videoRef,
+    hasSrcObject: videoRef && videoRef.current ? !!videoRef.current.srcObject : false,
+    isVideoDisabled
+  });
   
   const randomBackground = () => {
     const classes = ["background1", "background1", "background1"];
@@ -83,31 +82,18 @@ export const Participant = (props) => {
           playsInline
           muted={currentUser} // Mute own video to prevent feedback
           controls={false}
-          style={{
-            display: isVideoDisabled ? 'none' : 'block'
-          }}
           onLoadedMetadata={() => {
-            if (currentUser) console.log('Video element loaded metadata');
+            console.log('Video element loaded metadata for:', currentParticipant.name);
           }}
           onError={(e) => {
-            if (currentUser) console.error('Video element error:', e);
+            console.error('Video element error for:', currentParticipant.name, e);
           }}
         ></video>
         {isVideoDisabled && (
           <div className="video-placeholder">
             <div className="video-placeholder-content">
               <span className="video-off-icon">📷</span>
-              <span className="video-off-text">
-                {currentParticipant.video && (!videoRef || !videoRef.current || !videoRef.current.srcObject) 
-                  ? "Conectando cámara..." 
-                  : "Cámara desactivada"
-                }
-              </span>
-              {currentParticipant.video && (!videoRef || !videoRef.current || !videoRef.current.srcObject) && (
-                <span className="video-off-subtext">
-                  Verificando dispositivos...
-                </span>
-              )}
+              <span className="video-off-text">Cámara desactivada</span>
             </div>
           </div>
         )}
@@ -115,9 +101,6 @@ export const Participant = (props) => {
           ref={canvasRef}
           className={`canvas ${isVideoDisabled ? 'canvas-disabled' : ''}`}
           id={`participantCanvas${curentIndex}`}
-          style={{
-            display: isVideoDisabled ? 'none' : 'block'
-          }}
         ></canvas>
         <img 
           className="none-img"
