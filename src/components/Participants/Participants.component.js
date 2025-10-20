@@ -24,16 +24,46 @@ const Participants = (props) => {
     console.log('no error')
   }, []);
   useEffect(() => {
-    if (videoRef.current) {
-      console.log('video current here')
+    if (videoRef.current && props.stream) {
+      console.log('Setting video stream, currentUser:', props.currentUser);
       videoRef.current.srcObject = props.stream;
       videoRef.current.muted = true;
+      
+      // Force video to load and play
+      videoRef.current.load();
+      
+      // Check if video track is enabled
+      const videoTracks = props.stream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        console.log('Video track enabled status:', videoTracks[0].enabled);
+        console.log('Video track settings:', videoTracks[0].getSettings());
+      }
+      
+      // Try to play the video
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Video play prevented:', error);
+        });
+      }
     }
   }, [props.currentUser, props.stream]);
   const enableBackground = () => {
     const participantList = Object.keys(props.participants);
     participantList.forEach((element) => {
-      if (props.participants[element].background) {
+      const participant = props.participants[element];
+      
+      // Don't enable background if video is disabled
+      if (!participant.video && participant.currentUser) {
+        const canvasRefx = document.getElementById(`participantCanvas${element}`);
+        if (canvasRefx) {
+          canvasRefx.classList.remove("background-enabled");
+          canvasRefx.classList.add("background-disabled");
+        }
+        return;
+      }
+      
+      if (participant.background) {
         const videoRefx = document.getElementById(`participantVideo${element}`);
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         const image = document.getElementById(`imageCanvas${element}`);
@@ -43,7 +73,7 @@ const Participants = (props) => {
           canvasRefx.classList.add("background-enabled");
         }
         
-        const className = props.participants[element].className;
+        const className = participant.className;
         if (image && className) {
           image.onload = () => {
             console.log('Image loaded successfully');
@@ -82,9 +112,47 @@ const Participants = (props) => {
   useEffect(() => {
     enableBackground();
   }, [props.participants]);
+  
+  // Monitor video state changes for current user
+  useEffect(() => {
+    if (props.currentUser && videoRef.current && props.stream) {
+      const videoTracks = props.stream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        console.log('Current user video state changed:', props.currentUser.video);
+        console.log('Video track enabled:', videoTracks[0].enabled);
+        
+        // If video is supposed to be on but track is disabled, or vice versa
+        if (props.currentUser.video && !videoTracks[0].enabled) {
+          console.log('Video should be on but track is disabled, enabling...');
+          videoTracks[0].enabled = true;
+        } else if (!props.currentUser.video && videoTracks[0].enabled) {
+          console.log('Video should be off but track is enabled, disabling...');
+          videoTracks[0].enabled = false;
+        }
+      }
+    }
+  }, [props.currentUser?.video, props.stream]);
 
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
+    // Check if video is enabled/available
+    if (!videoRef || !canvasRef || videoRef.readyState < 2) {
+      console.log('Video not ready for segmentation');
+      return;
+    }
+    
+    // Check if video track is enabled
+    if (videoRef.srcObject) {
+      const videoTracks = videoRef.srcObject.getVideoTracks();
+      if (videoTracks.length > 0 && !videoTracks[0].enabled) {
+        console.log('Video track is disabled, stopping segmentation');
+        // Clear the canvas when video is disabled
+        const canvasCtx = canvasRef.getContext("2d");
+        canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+        return;
+      }
+    }
+    
     const canvasCtx = canvasRef.getContext("2d");
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
@@ -103,6 +171,17 @@ const Participants = (props) => {
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
+      }
+      
+      // Check if video track is still enabled
+      if (videoRef.srcObject) {
+        const videoTracks = videoRef.srcObject.getVideoTracks();
+        if (videoTracks.length > 0 && !videoTracks[0].enabled) {
+          // Video disabled, clear canvas and stop
+          canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+          console.log('Video disabled during segmentation, stopping');
+          return;
+        }
       }
       
       try {
