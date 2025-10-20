@@ -16,25 +16,9 @@ export const Participant = (props) => {
     canvasRef
   } = props;
   
-  if (!currentParticipant) return <></>;
-  
-  // For current user, check if video is disabled OR if video element has no stream
-  const isVideoDisabled = currentUser && (!currentParticipant.video || 
-    (videoRef && videoRef.current && !videoRef.current.srcObject));
-  
-  // Debug log for mobile troubleshooting
-  if (currentUser) {
-    console.log('Participant debug:', {
-      video: currentParticipant.video,
-      hasVideoRef: !!videoRef,
-      hasSrcObject: videoRef && videoRef.current ? !!videoRef.current.srcObject : false,
-      isVideoDisabled
-    });
-  }
-  
   // Monitor video stream changes for current user (especially important on mobile)
   useEffect(() => {
-    if (currentUser && videoRef && videoRef.current) {
+    if (currentUser && videoRef && videoRef.current && currentParticipant) {
       const videoElement = videoRef.current;
       
       const handleLoadedMetadata = () => {
@@ -65,7 +49,23 @@ export const Participant = (props) => {
         videoElement.removeEventListener('error', handleError);
       };
     }
-  }, [currentUser, videoRef, currentParticipant.video]);
+  }, [currentUser, videoRef, currentParticipant?.video]);
+  
+  if (!currentParticipant) return <></>;
+  
+  // For current user, check if video is disabled OR if video element has no stream
+  const isVideoDisabled = currentUser && (!currentParticipant.video || 
+    (videoRef && videoRef.current && !videoRef.current.srcObject));
+  
+  // Debug log for mobile troubleshooting
+  if (currentUser) {
+    console.log('Participant debug:', {
+      video: currentParticipant.video,
+      hasVideoRef: !!videoRef,
+      hasSrcObject: videoRef && videoRef.current ? !!videoRef.current.srcObject : false,
+      isVideoDisabled
+    });
+  }
   
   const randomBackground = () => {
     const classes = ["background1", "background1", "background1"];
