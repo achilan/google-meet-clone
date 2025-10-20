@@ -54,12 +54,20 @@ const Participants = (props) => {
     participantList.forEach((element) => {
       const participant = props.participants[element];
       
-      // Don't enable background if video is disabled
+      // For current user with video disabled, still set up canvas for direct drawing
       if (!participant.video && participant.currentUser) {
+        const videoRefx = document.getElementById(`participantVideo${element}`);
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         if (canvasRefx) {
           canvasRefx.classList.remove("background-enabled");
           canvasRefx.classList.add("background-disabled");
+          console.log('Mobile: Video disabled but setting up canvas for direct drawing');
+          // Still draw video directly to canvas even when video state is "disabled"
+          if (videoRefx) {
+            setTimeout(() => {
+              drawVideoToCanvas(videoRefx, canvasRefx, element);
+            }, 500);
+          }
         }
         return;
       }
@@ -118,6 +126,7 @@ const Participants = (props) => {
         // Draw video directly to canvas when no background is applied
         if (videoRefx && canvasRefx && participant.currentUser) {
           console.log('Mobile: Starting direct video draw for participant:', element);
+          console.log('Mobile: Canvas classes before:', canvasRefx.className);
           setTimeout(() => {
             drawVideoToCanvas(videoRefx, canvasRefx, element);
           }, 500);
@@ -164,6 +173,23 @@ const Participants = (props) => {
     console.log('Mobile: Handling current user canvas');
     console.log('Mobile: Current user has background:', props.background);
     console.log('Mobile: Current user video enabled:', props.currentUser.video);
+    console.log('Mobile: Canvas element found:', !!canvasRefx);
+    console.log('Mobile: Video element found:', !!videoRefx);
+    
+    // Temporarily disabled - need to distinguish between user-disabled vs processing state
+    /*if (!props.currentUser.video) {
+      // Video is completely disabled by user, clear canvas and stop any drawing
+      if (drawingFrames.current[currentUserIndex]) {
+        cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
+        delete drawingFrames.current[currentUserIndex];
+      }
+      if (canvasRefx) {
+        const canvasCtx = canvasRefx.getContext("2d");
+        canvasCtx.clearRect(0, 0, canvasRefx.width, canvasRefx.height);
+        console.log('Mobile: Video disabled by user, canvas cleared');
+      }
+      return;
+    }*/
     
     if (props.background) {
       // Background is enabled, cancel direct drawing
@@ -172,19 +198,13 @@ const Participants = (props) => {
         cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
         delete drawingFrames.current[currentUserIndex];
       }
-    } else if (props.currentUser.video) {
+    } else {
       // No background and video is enabled, draw directly
       if (videoRefx && canvasRefx) {
         console.log('Mobile: Starting direct draw for current user');
         setTimeout(() => {
           drawVideoToCanvas(videoRefx, canvasRefx, currentUserIndex);
         }, 500);
-      }
-    } else {
-      // Video is disabled, clear canvas
-      if (canvasRefx) {
-        const canvasCtx = canvasRefx.getContext("2d");
-        canvasCtx.clearRect(0, 0, canvasRefx.width, canvasRefx.height);
       }
     }
   };
@@ -208,9 +228,12 @@ const Participants = (props) => {
       cancelAnimationFrame(drawingFrames.current[participantId]);
     }
     
-    // Make sure canvas is visible
+    // Make sure canvas is visible and has correct classes for direct drawing
     canvasRef.style.display = 'block';
     canvasRef.style.opacity = '1';
+    canvasRef.classList.remove("background-enabled");
+    canvasRef.classList.add("background-disabled");
+    console.log('Mobile: Canvas classes set to:', canvasRef.className);
     
     let frameCount = 0;
     const drawFrame = () => {
@@ -229,13 +252,13 @@ const Participants = (props) => {
         return;
       }
       
-      // Check if video track is enabled
+      // For direct video drawing, we still draw even if track is "disabled"
+      // because we want to show the video stream directly
       if (videoRef.srcObject) {
         const videoTracks = videoRef.srcObject.getVideoTracks();
-        if (videoTracks.length > 0 && !videoTracks[0].enabled) {
-          canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-          drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
-          return;
+        if (videoTracks.length > 0) {
+          console.log('Mobile: Video track enabled status:', videoTracks[0].enabled);
+          // Don't return here for direct drawing - we want to show the video regardless
         }
       }
       
