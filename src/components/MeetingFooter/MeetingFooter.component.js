@@ -76,6 +76,10 @@ const MeetingFooter = (props) => {
         background: a,
       };
     });
+    // Llamar también a la función de props para actualizar el Redux store
+    if (props.onChangeBackground) {
+      props.onChangeBackground(a);
+    }
   };
   const onChangeBackgroundPictureFooter = (a) => {
     setStreamState((currentState) => {
@@ -84,6 +88,10 @@ const MeetingFooter = (props) => {
         className: a,
       };
     });
+    // Llamar también a la función de props para actualizar el Redux store
+    if (props.onChangeBackgroundPicture) {
+      props.onChangeBackgroundPicture(a);
+    }
   };
   const openModalBackground = () => {
     setOpen(true);

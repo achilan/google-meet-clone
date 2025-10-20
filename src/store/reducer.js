@@ -102,12 +102,14 @@ export const userReducer = (state = defaultUserState, action) => {
   } else if (action.type === UPDATE_PARTICIPANT) {
     let payload = action.payload;
     const newUserId = Object.keys(payload.newUser)[0];
+    
+    // No mezclar el estado de background del usuario actual con participantes remotos
     payload.newUser[newUserId] = {
       ...state.participants[newUserId],
-      ...payload.newUser[newUserId],
-      ...state.background
+      ...payload.newUser[newUserId]
+      // Removido: ...state.background - esto causaba que el background del usuario actual se aplicara a todos
     };
-    /* state.participants[newUserId].background = state.background; */
+    
     let participants = { ...state.participants, ...payload.newUser };
     state = { ...state, participants };
     return state;

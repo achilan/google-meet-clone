@@ -109,6 +109,7 @@ const MainScreen = (props) => {
   }
   const onChangeBackgroundPicture = async (className) => {
     if (props.stream) {
+      await props.setBackgroundPicture(className);
       await props.updateUser({ className: className });
     }
   }
