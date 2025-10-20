@@ -51,8 +51,8 @@ export const userName = name? name : generaterandomname();
 if (roomId) {
   firepadRef = firepadRef.child(roomId);
 } else {
-  firepadRef = firepadRef.push();
-  window.history.replaceState(null, "Meet", "?id=" + firepadRef.key);
+  throw new Error("No room ID provided in URL");
+  // window.history.replaceState(null, "Meet", "?id=" + firepadRef.key);
 }
 if (ishost) {
   firepadRef.child("host").set(userName);
