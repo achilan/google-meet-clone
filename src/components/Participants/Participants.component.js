@@ -134,15 +134,17 @@ const Participants = (props) => {
     );
   }
   useEffect(() => {
-    // Small delay to ensure DOM elements exist
-    setTimeout(() => {
-      enableBackground();
-    }, 50);
-  }, [props.participants, props.background]);
+    // Only update background for participants when participants list changes, not on every background change
+    if (Object.keys(props.participants).length > 0) {
+      setTimeout(() => {
+        enableBackground();
+      }, 50);
+    }
+  }, [props.participants]); // Removed props.background to prevent updates for remote users
   
   // Monitor video state changes for current user
   useEffect(() => {
-    console.log('Video/Background state changed - Video:', props.currentUser?.video, 'Background:', props.background);
+    console.log('Video state changed for current user:', props.currentUser?.video);
     
     // Handle canvas changes with a small delay to prevent rapid updates
     const timeoutId = setTimeout(() => {
@@ -150,7 +152,19 @@ const Participants = (props) => {
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [props.currentUser?.video, props.background]);
+  }, [props.currentUser?.video]);
+
+  // Monitor background changes separately for current user only
+  useEffect(() => {
+    console.log('Background state changed for current user:', props.background);
+    
+    // Handle background changes only for current user
+    const timeoutId = setTimeout(() => {
+      handleCurrentUserCanvas();
+    }, 150);
+    
+    return () => clearTimeout(timeoutId);
+  }, [props.background]);
 
   // Monitor background image changes for current user only
   useEffect(() => {
@@ -170,7 +184,7 @@ const Participants = (props) => {
     const videoRefx = document.getElementById(`participantVideo${currentUserIndex}`);
     const canvasRefx = document.getElementById(`participantCanvas${currentUserIndex}`);
     
-    console.log('Mobile: Handling current user canvas');
+    console.log('Mobile: Handling ONLY current user canvas - not affecting remote participants');
     console.log('Mobile: Current user has background:', props.background);
     console.log('Mobile: Current user video enabled:', props.currentUser.video);
     
