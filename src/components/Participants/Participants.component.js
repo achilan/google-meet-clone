@@ -49,89 +49,90 @@ const Participants = (props) => {
       }
     }
   }, [props.currentUser, props.stream]);
-  const enableBackground = () => {
-    const participantList = Object.keys(props.participants);
-    participantList.forEach((element) => {
-      const participant = props.participants[element];
+  // Separate function for each participant to avoid interference
+  const handleParticipantCanvas = (participantId, participant) => {
+    const videoRefx = document.getElementById(`participantVideo${participantId}`);
+    const canvasRefx = document.getElementById(`participantCanvas${participantId}`);
+    const image = document.getElementById(`imageCanvas${participantId}`);
+    
+    if (!videoRefx || !canvasRefx) {
+      console.log(`Missing elements for participant ${participantId}`);
+      return;
+    }
+    
+    // Always cancel existing animations first to prevent conflicts
+    if (drawingFrames.current[participantId]) {
+      cancelAnimationFrame(drawingFrames.current[participantId]);
+      delete drawingFrames.current[participantId];
+    }
+    
+    console.log(`Handling participant ${participantId} - Background: ${participant.background}, Video: ${participant.video}, CurrentUser: ${participant.currentUser}`);
+    
+    // For current user with video disabled, still set up canvas for direct drawing
+    if (!participant.video && participant.currentUser) {
+      canvasRefx.classList.remove("background-enabled");
+      canvasRefx.classList.add("background-disabled");
+      console.log(`Current user ${participantId}: Video disabled but setting up direct drawing`);
+      if (videoRefx) {
+        setTimeout(() => {
+          drawVideoToCanvas(videoRefx, canvasRefx, participantId);
+        }, 100);
+      }
+      return;
+    }
+    
+    if (participant.background) {
+      // Background mode
+      canvasRefx.classList.remove("background-disabled");
+      canvasRefx.classList.add("background-enabled");
       
-      // For current user with video disabled, still set up canvas for direct drawing
-      if (!participant.video && participant.currentUser) {
-        const videoRefx = document.getElementById(`participantVideo${element}`);
-        const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        if (canvasRefx) {
-          canvasRefx.classList.remove("background-enabled");
-          canvasRefx.classList.add("background-disabled");
-          console.log('Mobile: Video disabled but setting up canvas for direct drawing');
-          // Still draw video directly to canvas even when video state is "disabled"
-          if (videoRefx) {
-            setTimeout(() => {
-              drawVideoToCanvas(videoRefx, canvasRefx, element);
-            }, 500);
-          }
-        }
-        return;
+      const className = participant.className;
+      if (image && className) {
+        image.onload = () => {
+          console.log(`Background image loaded for participant ${participantId}:`, className);
+          // Use a unique timeout for each participant
+          setTimeout(() => {
+            mediapipeSegmentation(videoRefx, canvasRefx, image);
+          }, participantId.length * 50); // Stagger based on participant ID
+        };
+        image.onerror = () => {
+          console.error(`Failed to load background image for ${participantId}:`, className);
+        };
+        image.src = className;
+      } else if (videoRefx && canvasRefx) {
+        // No background image, run segmentation without background
+        setTimeout(() => {
+          mediapipeSegmentation(videoRefx, canvasRefx, null);
+        }, participantId.length * 50);
+      }
+    } else {
+      // Direct video mode
+      canvasRefx.classList.remove("background-enabled");
+      canvasRefx.classList.add("background-disabled");
+      
+      if (image) {
+        image.src = "";
       }
       
-      if (participant.background) {
-        const videoRefx = document.getElementById(`participantVideo${element}`);
-        const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        const image = document.getElementById(`imageCanvas${element}`);
-        
-        // Cancel any direct video drawing
-        if (drawingFrames.current[element]) {
-          cancelAnimationFrame(drawingFrames.current[element]);
-          delete drawingFrames.current[element];
-        }
-        
-        if (canvasRefx) {
-          canvasRefx.classList.remove("background-disabled");
-          canvasRefx.classList.add("background-enabled");
-        }
-        
-        const className = participant.className;
-        if (image && className) {
-          image.onload = () => {
-            console.log('Image loaded successfully for background:', className);
-            if (videoRefx && canvasRefx && image) {
-              // Start immediately when image loads
-              mediapipeSegmentation(videoRefx, canvasRefx, image);
-            }
-          };
-          image.onerror = () => {
-            console.error('Failed to load background image:', className);
-          };
-          image.src = className;
-        } else if (videoRefx && canvasRefx) {
-          // If no background image, still run segmentation without background
-          console.log('Starting segmentation without background image');
-          mediapipeSegmentation(videoRefx, canvasRefx, null);
-        }
-      } else {
-        // No background - draw video directly to canvas
-        const videoRefx = document.getElementById(`participantVideo${element}`);
-        const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        const image = document.getElementById(`imageCanvas${element}`);
-        
-        if (canvasRefx) {
-          canvasRefx.classList.remove("background-enabled");
-          canvasRefx.classList.add("background-disabled");
-        }
-        
-        if (image) {
-          image.src = "";
-        }
-        
-        // Draw video directly to canvas when no background is applied
-        if (videoRefx && canvasRefx && participant.currentUser) {
-          console.log('Mobile: Starting direct video draw for participant:', element);
-          console.log('Mobile: Canvas classes before:', canvasRefx.className);
-          setTimeout(() => {
-            drawVideoToCanvas(videoRefx, canvasRefx, element);
-          }, 500);
-        }
+      // Only draw directly for current user
+      if (participant.currentUser) {
+        console.log(`Starting direct video draw for current user ${participantId}`);
+        setTimeout(() => {
+          drawVideoToCanvas(videoRefx, canvasRefx, participantId);
+        }, 50);
       }
     }
-    );
+  };
+  
+  const enableBackground = () => {
+    const participantList = Object.keys(props.participants);
+    // Process each participant separately with delays to avoid conflicts
+    participantList.forEach((element, index) => {
+      const participant = props.participants[element];
+      setTimeout(() => {
+        handleParticipantCanvas(element, participant);
+      }, index * 100); // Stagger each participant by 100ms
+    });
   }
   useEffect(() => {
     // Only update background for participants when participants list changes, not on every background change
@@ -230,82 +231,71 @@ const Participants = (props) => {
   };
 
   const drawVideoToCanvas = (videoRef, canvasRef, participantId) => {
-    console.log('Mobile: drawVideoToCanvas called for participant:', participantId);
-    console.log('Mobile: Video element:', videoRef);
-    console.log('Mobile: Canvas element:', canvasRef);
-    console.log('Mobile: Video readyState:', videoRef?.readyState);
-    console.log('Mobile: Video dimensions:', videoRef?.videoWidth, 'x', videoRef?.videoHeight);
+    console.log(`Direct draw initiated for participant ${participantId}`);
     
     if (!videoRef || !canvasRef) {
-      console.error('Mobile: Missing video or canvas element');
+      console.error(`Missing elements for participant ${participantId}`);
+      return;
+    }
+    
+    // Double-check this is still the correct mode before starting
+    if (!canvasRef.classList.contains("background-disabled")) {
+      console.log(`Canvas mode changed for ${participantId}, aborting direct draw`);
       return;
     }
     
     const canvasCtx = canvasRef.getContext("2d");
     
-    // Cancel any existing drawing loop for this participant
-    if (drawingFrames.current[participantId]) {
-      cancelAnimationFrame(drawingFrames.current[participantId]);
-    }
-    
-    // Make sure canvas is visible and has correct classes for direct drawing
+    // Ensure canvas setup
     canvasRef.style.display = 'block';
     canvasRef.style.opacity = '1';
-    canvasRef.classList.remove("background-enabled");
-    canvasRef.classList.add("background-disabled");
-    console.log('Mobile: Canvas classes set to:', canvasRef.className);
-    console.log('Mobile: Switching to direct drawing mode - MediaPipe will be blocked');
+    console.log(`Participant ${participantId}: Starting direct video drawing`);
     
     let frameCount = 0;
     const drawFrame = () => {
       frameCount++;
       
+      // Check if mode changed during drawing
+      if (!canvasRef.classList.contains("background-disabled")) {
+        console.log(`Canvas switched to background mode for ${participantId}, stopping direct draw`);
+        delete drawingFrames.current[participantId];
+        return;
+      }
+      
       if (!videoRef || !canvasRef) {
-        console.log('Mobile: Video or canvas disappeared, stopping draw');
+        console.log(`Elements disappeared for ${participantId}, stopping draw`);
+        delete drawingFrames.current[participantId];
         return;
       }
       
       if (videoRef.readyState < 2) {
-        if (frameCount % 60 === 0) { // Log every 60 frames
-          console.log('Mobile: Video not ready, readyState:', videoRef.readyState);
-        }
         drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
         return;
-      }
-      
-      // For direct video drawing, we still draw even if track is "disabled"
-      // because we want to show the video stream directly
-      if (videoRef.srcObject) {
-        const videoTracks = videoRef.srcObject.getVideoTracks();
-        if (videoTracks.length > 0) {
-          console.log('Mobile: Video track enabled status:', videoTracks[0].enabled);
-          // Don't return here for direct drawing - we want to show the video regardless
-        }
       }
       
       if (videoRef.videoWidth > 0 && videoRef.videoHeight > 0) {
         canvasRef.width = videoRef.videoWidth;
         canvasRef.height = videoRef.videoHeight;
-        
-        // Draw video directly to canvas
         canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
         
         if (frameCount === 1) {
-          console.log('Mobile: First frame drawn successfully!');
+          console.log(`First frame drawn for participant ${participantId}`);
         }
       }
       
       drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
     };
     
-    console.log('Mobile: Starting draw loop');
     drawFrame();
   };
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
+    const participantId = canvasRef?.id?.replace('participantCanvas', '');
+    console.log(`MediaPipe segmentation started for participant ${participantId}`);
+    
     // Check if canvas is in direct drawing mode (background-disabled)
     if (canvasRef && canvasRef.classList.contains('background-disabled')) {
-      console.log('Canvas is in direct drawing mode, skipping MediaPipe segmentation');
+      console.log(`Canvas is in direct drawing mode for ${participantId}, skipping MediaPipe segmentation`);
       return;
     }
     
