@@ -10,4 +10,5 @@
 
 .footer{
     height: 10vh;
+    background: linear-gradient(135deg, #009cb6 0%, #007a8c 100%);
 }

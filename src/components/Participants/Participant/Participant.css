@@ -1,6 +1,6 @@
 
   .video{
-    background-color: #2a77c3;
+    background-color: #009cb6;
     height: 100%;
     width: 100%;
     position: relative;
@@ -8,7 +8,7 @@
     border-radius: 5px;
   }
   .canvas{
-    background-color: #2a77c3;
+    background-color: #009cb6;
     height: 100%;
     width: 100%;
     position: absolute;
@@ -31,20 +31,19 @@
     display: block;
   }
   .background1 {
-    background-image: url(https://ieced.com.ec/assets/bg1.jpg);
+    background-image: url('./../../../assets/1.jpg');
     background-size: cover;
+    background-position: center;
   }
   .background2 {
-    background-image: url(https://ieced.com.ec/assets/videollamada/1.jpg);
+    background-image: url('./../../../assets/2.jpg');
     background-size: cover;
+    background-position: center;
   }
   .background3 {
-    background-image: url(https://ieced.com.ec/assets/videollamada/2.jpg);
+    background-image: url('./../../../assets/3.jpg');
     background-size: cover;
-  }
-  .background4 {
-    background-image: url(https://ieced.com.ec/assets/videollamada/3.jpg);
-    background-size: cover;
+    background-position: center;
   }
 
   .participant {

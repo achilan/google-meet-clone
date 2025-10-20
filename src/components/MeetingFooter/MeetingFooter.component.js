@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import background1 from "../../assets/1.jpg";
+import background2 from "../../assets/2.jpg";
+import background3 from "../../assets/3.jpg";
 import {
   faMicrophone,
   faVideo,
@@ -7,7 +10,8 @@ import {
   faVideoSlash,
   faMicrophoneSlash,
   faImage,
-  faBan
+  faBan,
+  faPhoneSlash
 } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import "./MeetingFooter.css";
@@ -24,19 +28,15 @@ const MeetingFooter = (props) => {
   const backgrounds = [
     {
       name: "background1",
-      className: "https://ieced.com.ec/assets/bg1.jpg"
+      className: background1
     },
     {
       name: "background2",
-      className: "https://ieced.com.ec/assets/videollamada/1.jpg"
+      className: background2
     },
     {
       name: "background3",
-      className: "https://ieced.com.ec/assets/videollamada/2.jpg"
-    },
-    {
-      name: "background4",
-      className: "https://ieced.com.ec/assets/videollamada/3.jpg"
+      className: background3
     },
   ];
   const [open, setOpen] = useState(false);
@@ -79,6 +79,17 @@ const MeetingFooter = (props) => {
   const onCloseModal = () => {
     setOpen(false);
   };
+  
+  const onEndCall = () => {
+    if (window.confirm("¿Estás seguro de que quieres finalizar la llamada?")) {
+      // Close the current window/tab
+      window.close();
+      // If window.close() doesn't work (some browsers prevent it), try redirecting
+      setTimeout(() => {
+        window.location.href = "about:blank";
+      }, 100);
+    }
+  };
   const onScreenClick = () => {
     props.onScreenClick(setScreenState);
   };
@@ -107,8 +118,20 @@ const MeetingFooter = (props) => {
       <div className={"meeting-icons " + (streamState.background ? "active" : "")} data-tip="Change Background" onClick={openModalBackground} >
         <FontAwesomeIcon icon={faImage} />
       </div>
-      <Modal open={open} onClose={onCloseModal} center>
-        <h2>Selecciona el fondo</h2>
+      <Modal 
+        open={open} 
+        onClose={onCloseModal} 
+        center
+        showCloseIcon={false}
+        classNames={{
+          modal: 'custom-modal-backgrounds',
+          overlay: 'custom-modal-overlay'
+        }}
+      >
+        <div className="modal-header">
+          <h2>Selecciona el fondo</h2>
+          <button className="close-button" onClick={onCloseModal}>×</button>
+        </div>
         <div className="backgrounds">
           <div
             key="none"
@@ -163,6 +186,13 @@ const MeetingFooter = (props) => {
       >
         <FontAwesomeIcon icon={faDesktop} />
       </div> */}
+      <div
+        className="meeting-icons end-call-button"
+        data-tip="Finalizar llamada"
+        onClick={onEndCall}
+      >
+        <FontAwesomeIcon icon={faPhoneSlash} />
+      </div>
       <ReactTooltip />
     </div>
   );

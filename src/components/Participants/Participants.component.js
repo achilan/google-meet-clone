@@ -36,20 +36,45 @@ const Participants = (props) => {
       if (props.participants[element].background) {
         const videoRefx = document.getElementById(`participantVideo${element}`);
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        canvasRefx.classList.remove("background-disabled");
-        canvasRefx.classList.add("background-enabled");
+        const image = document.getElementById(`imageCanvas${element}`);
+        
+        if (canvasRefx) {
+          canvasRefx.classList.remove("background-disabled");
+          canvasRefx.classList.add("background-enabled");
+        }
+        
         const className = props.participants[element].className;
-        const image = document.getElementById(`imageCanvas${element}`);  
-        image.src = className;
-        setTimeout(() => {
-          mediapipeSegmentation(videoRefx, canvasRefx, image);
-        }, 1500);
+        if (image && className) {
+          image.onload = () => {
+            console.log('Image loaded successfully');
+            if (videoRefx && canvasRefx && image) {
+              setTimeout(() => {
+                mediapipeSegmentation(videoRefx, canvasRefx, image);
+              }, 1500);
+            }
+          };
+          image.onerror = () => {
+            console.error('Failed to load background image:', className);
+          };
+          image.src = className;
+        } else if (videoRefx && canvasRefx) {
+          // If no background image, still run segmentation without background
+          setTimeout(() => {
+            mediapipeSegmentation(videoRefx, canvasRefx, null);
+          }, 1500);
+        }
       } else {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
-        canvasRefx.classList.remove("background-enabled");
-        canvasRefx.classList.add("background-disabled");
         const image = document.getElementById(`imageCanvas${element}`);
-        image.src = "";
+        
+        if (canvasRefx) {
+          canvasRefx.classList.remove("background-enabled");
+          canvasRefx.classList.add("background-disabled");
+        }
+        
+        if (image) {
+          image.src = "";
+        }
       }
     }
     );
@@ -60,52 +85,76 @@ const Participants = (props) => {
 
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
-    // Use MediaPipe to get segmentation mask
     const canvasCtx = canvasRef.getContext("2d");
     canvasRef.width = videoRef.videoWidth;
     canvasRef.height = videoRef.videoHeight;
     
-    const drawCanvas = async () => {
+    let lastFrameTime = 0;
+    const fps = 15; // Reduce FPS to improve performance
+    const frameInterval = 1000 / fps;
+    
+    const drawCanvas = async (currentTime) => {
+      if (currentTime - lastFrameTime < frameInterval) {
+        requestAnimationFrame(drawCanvas);
+        return;
+      }
+      lastFrameTime = currentTime;
+      
       if (videoRef.readyState < 2) {
         requestAnimationFrame(drawCanvas);
         return;
       }
-      await SelfieSegmentation.send({ image: videoRef });
-      SelfieSegmentation.onResults(async (results) => {
-        if (results.segmentationMask) {
-          const segmentationMask = results.segmentationMask;
-          canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-          canvasCtx.drawImage(
-            segmentationMask,
-            0,
-            0,
-            canvasRef.width,
-            canvasRef.height
-          );
-          if (image.complete) {
-            canvasCtx.globalCompositeOperation = "source-out";
+      
+      try {
+        if (!SelfieSegmentation) {
+          requestAnimationFrame(drawCanvas);
+          return;
+        }
+        await SelfieSegmentation.send({ image: videoRef });
+        SelfieSegmentation.onResults(async (results) => {
+          if (results.segmentationMask) {
+            const segmentationMask = results.segmentationMask;
+            canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
             canvasCtx.drawImage(
-              image,
+              segmentationMask,
               0,
               0,
               canvasRef.width,
               canvasRef.height
             );
             
+            // Check if image exists and is loaded properly
+            if (image && image.complete && image.naturalHeight !== 0 && image.src && image.src !== "") {
+              try {
+                canvasCtx.globalCompositeOperation = "source-out";
+                canvasCtx.drawImage(
+                  image,
+                  0,
+                  0,
+                  canvasRef.width,
+                  canvasRef.height
+                );
+              } catch (drawError) {
+                console.error("Error drawing background image:", drawError);
+              }
+            }
+            
+            canvasCtx.globalCompositeOperation = "destination-atop";
+            canvasCtx.drawImage(
+              results.image,
+              0,
+              0,
+              canvasRef.width,
+              canvasRef.height
+            );
           }
-          canvasCtx.globalCompositeOperation = "destination-atop";
-          canvasCtx.drawImage(
-            results.image,
-            0,
-            0,
-            canvasRef.width,
-            canvasRef.height
-          );
-        }
-      });
+        });
+      } catch (error) {
+        console.error("Segmentation error:", error);
+      }
       requestAnimationFrame(drawCanvas);
     };
-    drawCanvas();
+    requestAnimationFrame(drawCanvas);
   };
   const currentUser = props.currentUser
     ? Object.values(props.currentUser)[0]

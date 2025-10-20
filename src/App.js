@@ -1,7 +1,8 @@
 import MainScreen from "./components/MainScreen/MainScreen.component";
-import firepadRef, { db, userName } from "./server/firebase";
+import WaitingRoom from "./components/WaitingRoom/WaitingRoom.component";
+import firepadRef, { db } from "./server/firebase";
 import "./App.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   setMainStream,
   addParticipant,
@@ -12,6 +13,11 @@ import {
 import { connect } from "react-redux";
 
 function App(props) {
+  const [hasJoined, setHasJoined] = useState(false);
+  const [isDoctorPresent, setIsDoctorPresent] = useState(false);
+  const [currentUserType, setCurrentUserType] = useState("");
+  const [currentUserKey, setCurrentUserKey] = useState(null);
+  
   const getUserStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -28,14 +34,26 @@ function App(props) {
     }
   };
   useEffect(async () => {
+    if (!hasJoined) return;
+    
+    // Clean up existing user data if reconnecting
+    if (currentUserKey) {
+      try {
+        await participantRef.child(currentUserKey).remove();
+      } catch (error) {
+        console.log("No previous user to remove");
+      }
+    }
+    
     const stream = await getUserStream();
     console.log(stream);
     if (stream.getVideoTracks().length > 0) {
       stream.getVideoTracks()[0].enabled = false;
     }
     props.setMainStream(stream);
-    connectedRef.on("value", (snap) => {
-      if (snap.val()) {
+    
+    const connectionHandler = (snap) => {
+      if (snap.val() && !currentUserKey) {
         const defaultPreference = {
           audio: true,
           video: false,
@@ -43,57 +61,173 @@ function App(props) {
           background: false,
           className: "",
         };
-        const userStatusRef = participantRef.push({
-          userName,
-          preferences: defaultPreference,
+        
+        // Check if user already exists with same name and type
+        participantRef.once('value', (participantsSnapshot) => {
+          const existingParticipants = participantsSnapshot.val();
+          let shouldCreateNewUser = true;
+          
+          if (existingParticipants) {
+            // Check for duplicate user
+            Object.keys(existingParticipants).forEach(key => {
+              const participant = existingParticipants[key];
+              if (participant.userName === window.userName && 
+                  participant.userType === currentUserType) {
+                // User already exists, don't create duplicate
+                shouldCreateNewUser = false;
+                setCurrentUserKey(key);
+                props.setUser({
+                  [key]: { name: window.userName, ...defaultPreference, userType: currentUserType },
+                });
+              }
+            });
+          }
+          
+          if (shouldCreateNewUser) {
+            const userStatusRef = participantRef.push({
+              userName: window.userName,
+              preferences: defaultPreference,
+              userType: currentUserType,
+              timestamp: Date.now(), // Add timestamp for uniqueness
+            });
+            
+            setCurrentUserKey(userStatusRef.key);
+            props.setUser({
+              [userStatusRef.key]: { name: window.userName, ...defaultPreference, userType: currentUserType },
+            });
+            userStatusRef.onDisconnect().remove();
+          }
         });
-        props.setUser({
-          [userStatusRef.key]: { name: userName, ...defaultPreference },
-        });
-        userStatusRef.onDisconnect().remove();
       }
-    });
-  }, []);
+    };
+    
+    connectedRef.on("value", connectionHandler);
+    
+    // Cleanup function
+    return () => {
+      connectedRef.off("value", connectionHandler);
+    };
+  }, [hasJoined, currentUserType]);
 
   const connectedRef = db.database().ref(".info/connected");
   console.log(connectedRef)
   const participantRef = firepadRef.child("participants");
   console.log(participantRef)
+  
+  // Monitor for doctor presence
+  useEffect(() => {
+    participantRef.on("value", (snapshot) => {
+      const participants = snapshot.val();
+      if (participants) {
+        const doctorPresent = Object.values(participants).some(
+          participant => participant.userType === "doctor"
+        );
+        setIsDoctorPresent(doctorPresent);
+      } else {
+        setIsDoctorPresent(false);
+      }
+    });
+    
+    return () => {
+      participantRef.off();
+    };
+  }, []);
+  
+  const handleJoinAsDoctor = (doctorName) => {
+    window.userName = doctorName;
+    setCurrentUserType("doctor");
+    setHasJoined(true);
+  };
+  
+  const handleJoinAsPatient = (patientName) => {
+    window.userName = patientName;
+    setCurrentUserType("patient");
+    setHasJoined(true);
+  };
+  
+  // Cleanup function when component unmounts or user leaves
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (currentUserKey) {
+        // Remove user from Firebase when leaving
+        participantRef.child(currentUserKey).remove();
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Clean up on component unmount
+      if (currentUserKey) {
+        participantRef.child(currentUserKey).remove();
+      }
+    };
+  }, [currentUserKey]);
 
   const isUserSet = !!props.user;
   const isStreamSet = !!props.stream;
 
   useEffect(() => {
     if (isStreamSet && isUserSet) {
-      participantRef.on("child_added", (snap) => {
+      const childAddedHandler = (snap) => {
+        const participantData = snap.val();
+        if (!participantData) return;
+        
+        // Check if this participant is already in our state to prevent duplicates
+        const existingParticipant = props.participants[snap.key];
+        if (existingParticipant) {
+          console.log("Participant already exists, skipping:", snap.key);
+          return;
+        }
+        
         const preferenceUpdateEvent = participantRef
           .child(snap.key)
           .child("preferences");
         preferenceUpdateEvent.on("child_changed", (preferenceSnap) => {
-          //console.log(preferenceSnap.val(), preferenceSnap.key);
           props.updateParticipant({
             [snap.key]: {
               [preferenceSnap.key]: preferenceSnap.val(),
             },
           });
         });
-        const { userName: name, preferences = {} } = snap.val();
+        
+        const { userName: name, preferences = {}, userType } = participantData;
         props.addParticipant({
           [snap.key]: {
             name,
+            userType,
             ...preferences,
           },
         });
-      });
-      participantRef.on("child_removed", (snap) => {
+      };
+      
+      const childRemovedHandler = (snap) => {
         props.removeParticipant(snap.key);
-      });
+      };
+      
+      participantRef.on("child_added", childAddedHandler);
+      participantRef.on("child_removed", childRemovedHandler);
+      
+      // Cleanup function
+      return () => {
+        participantRef.off("child_added", childAddedHandler);
+        participantRef.off("child_removed", childRemovedHandler);
+      };
     }
   }, [isStreamSet, isUserSet]);
 
   return (
     <div className="App">
-      <MainScreen />
+      {!hasJoined ? (
+        <WaitingRoom 
+          onJoinAsDoctor={handleJoinAsDoctor}
+          onJoinAsPatient={handleJoinAsPatient}
+          isDoctorPresent={isDoctorPresent}
+        />
+      ) : (
+        <MainScreen />
+      )}
     </div>
   );
 }
@@ -102,6 +236,7 @@ const mapStateToProps = (state) => {
   return {
     stream: state.mainStream,
     user: state.currentUser,
+    participants: state.participants,
     background: state.background,
   };
 };
