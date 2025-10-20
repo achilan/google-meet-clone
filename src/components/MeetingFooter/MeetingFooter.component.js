@@ -18,9 +18,18 @@ import "./MeetingFooter.css";
 import 'react-responsive-modal/styles.css';
 import { Modal } from 'react-responsive-modal';
 const MeetingFooter = (props) => {
+  // Get initial states from props or default values
+  const initialVideoState = props.initialVideoState !== undefined ? props.initialVideoState : false;
+  const initialMicState = props.initialMicState !== undefined ? props.initialMicState : true;
+  
+  console.log('MeetingFooter props:', { 
+    initialVideoState: props.initialVideoState, 
+    initialMicState: props.initialMicState 
+  });
+  
   const [streamState, setStreamState] = useState({
-    mic: true,
-    video: false,
+    mic: initialMicState,
+    video: initialVideoState,
     screen: false,
     background: false,
     className: "",
@@ -50,10 +59,13 @@ const MeetingFooter = (props) => {
   };
 
   const onVideoClick = () => {
+    console.log('Video button clicked, current state:', streamState.video);
     setStreamState((currentState) => {
+      const newVideoState = !currentState.video;
+      console.log('Setting video state to:', newVideoState);
       return {
         ...currentState,
-        video: !currentState.video,
+        video: newVideoState,
       };
     });
   };
@@ -113,6 +125,35 @@ const MeetingFooter = (props) => {
   useEffect(() => {
     props.onChangeBackgroundPicture(streamState.className);
   }, [streamState.className]);
+  
+  // Sync with external state changes (only when props actually change)
+  useEffect(() => {
+    if (props.initialVideoState !== undefined) {
+      setStreamState(currentState => {
+        if (currentState.video !== props.initialVideoState) {
+          return {
+            ...currentState,
+            video: props.initialVideoState
+          };
+        }
+        return currentState;
+      });
+    }
+  }, [props.initialVideoState]);
+  
+  useEffect(() => {
+    if (props.initialMicState !== undefined) {
+      setStreamState(currentState => {
+        if (currentState.mic !== props.initialMicState) {
+          return {
+            ...currentState,
+            mic: props.initialMicState
+          };
+        }
+        return currentState;
+      });
+    }
+  }, [props.initialMicState]);
   return (
     <div className="meeting-footer">
       <div className={"meeting-icons " + (streamState.background ? "active" : "")} data-tip="Change Background" onClick={openModalBackground} >
@@ -165,6 +206,14 @@ const MeetingFooter = (props) => {
         className={"meeting-icons " + (!streamState.mic ? "active" : "")}
         data-tip={streamState.mic ? "Mute Audio" : "Unmute Audio"}
         onClick={micClick}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          micClick();
+        }}
+        style={{ 
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent'
+        }}
       >
         <FontAwesomeIcon
           icon={!streamState.mic ? faMicrophoneSlash : faMicrophone}
@@ -175,6 +224,14 @@ const MeetingFooter = (props) => {
         className={"meeting-icons " + (!streamState.video ? "active" : "")}
         data-tip={streamState.video ? "Hide Video" : "Show Video"}
         onClick={onVideoClick}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          onVideoClick();
+        }}
+        style={{ 
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent'
+        }}
       >
         <FontAwesomeIcon icon={!streamState.video ? faVideoSlash : faVideo} />
       </div>

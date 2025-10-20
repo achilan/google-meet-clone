@@ -8,16 +8,40 @@ import { setMainStream, updateUser, setBackgroundStream,setBackgroundPicture } f
 const MainScreen = (props) => {
   const participantRef = useRef(props.participants);
   const [background, setBackground] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const [isMicEnabled, setIsMicEnabled] = useState(true);
+
+  // Check initial stream state when component mounts
+  useEffect(() => {
+    if (props.stream) {
+      const videoTrack = props.stream.getVideoTracks()[0];
+      const audioTrack = props.stream.getAudioTracks()[0];
+      
+      if (videoTrack) {
+        setIsVideoEnabled(videoTrack.enabled);
+      }
+      if (audioTrack) {
+        setIsMicEnabled(audioTrack.enabled);
+      }
+    }
+  }, [props.stream]);
   const onMicClick = (micEnabled) => {
     if (props.stream) {
       props.stream.getAudioTracks()[0].enabled = micEnabled;
       props.updateUser({ audio: micEnabled });
+      setIsMicEnabled(micEnabled);
     }
   };
   const onVideoClick = (videoEnabled) => {
+    console.log('MainScreen onVideoClick called with:', videoEnabled);
     if (props.stream) {
-      props.stream.getVideoTracks()[0].enabled = videoEnabled;
+      const videoTrack = props.stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = videoEnabled;
+        console.log('Video track enabled set to:', videoEnabled);
+      }
       props.updateUser({ video: videoEnabled });
+      setIsVideoEnabled(videoEnabled);
     }
   };
 
@@ -101,6 +125,8 @@ const MainScreen = (props) => {
           onVideoClick={onVideoClick}
           onChangeBackground={onChangeBackground}
           onChangeBackgroundPicture={onChangeBackgroundPicture}
+          initialVideoState={isVideoEnabled}
+          initialMicState={isMicEnabled}
         />
       </div>
     </div>
