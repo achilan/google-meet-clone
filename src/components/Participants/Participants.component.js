@@ -12,6 +12,7 @@ const Participants = (props) => {
   const canvasRef = useRef(null);
   let participantKey = Object.keys(props.participants);
   const [SelfieSegmentation, setSelfieSegmentation] = useState(null);
+  const drawingFrames = useRef({}); // Track drawing loops for each participant
   useEffect(() => {
     const segMentation = new selfie_segmentation.SelfieSegmentation({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
@@ -68,6 +69,12 @@ const Participants = (props) => {
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         const image = document.getElementById(`imageCanvas${element}`);
         
+        // Cancel any direct video drawing
+        if (drawingFrames.current[element]) {
+          cancelAnimationFrame(drawingFrames.current[element]);
+          delete drawingFrames.current[element];
+        }
+        
         if (canvasRefx) {
           canvasRefx.classList.remove("background-disabled");
           canvasRefx.classList.add("background-enabled");
@@ -94,6 +101,8 @@ const Participants = (props) => {
           }, 1500);
         }
       } else {
+        // No background - draw video directly to canvas
+        const videoRefx = document.getElementById(`participantVideo${element}`);
         const canvasRefx = document.getElementById(`participantCanvas${element}`);
         const image = document.getElementById(`imageCanvas${element}`);
         
@@ -104,6 +113,13 @@ const Participants = (props) => {
         
         if (image) {
           image.src = "";
+        }
+        
+        // Draw video directly to canvas when no background is applied
+        if (videoRefx && canvasRefx && participant.currentUser) {
+          setTimeout(() => {
+            drawVideoToCanvas(videoRefx, canvasRefx, element);
+          }, 100);
         }
       }
     }
@@ -133,6 +149,41 @@ const Participants = (props) => {
     }
   }, [props.currentUser?.video, props.stream]);
 
+  const drawVideoToCanvas = (videoRef, canvasRef, participantId) => {
+    const canvasCtx = canvasRef.getContext("2d");
+    
+    // Cancel any existing drawing loop for this participant
+    if (drawingFrames.current[participantId]) {
+      cancelAnimationFrame(drawingFrames.current[participantId]);
+    }
+    
+    const drawFrame = () => {
+      if (!videoRef || !canvasRef || videoRef.readyState < 2) {
+        drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
+        return;
+      }
+      
+      // Check if video track is enabled
+      if (videoRef.srcObject) {
+        const videoTracks = videoRef.srcObject.getVideoTracks();
+        if (videoTracks.length > 0 && !videoTracks[0].enabled) {
+          canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+          drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
+          return;
+        }
+      }
+      
+      canvasRef.width = videoRef.videoWidth;
+      canvasRef.height = videoRef.videoHeight;
+      
+      // Draw video directly to canvas
+      canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+      
+      drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
+    };
+    
+    drawFrame();
+  };
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
     // Check if video is enabled/available
@@ -141,21 +192,19 @@ const Participants = (props) => {
       return;
     }
     
+    const canvasCtx = canvasRef.getContext("2d");
+    canvasRef.width = videoRef.videoWidth;
+    canvasRef.height = videoRef.videoHeight;
+    
     // Check if video track is enabled
     if (videoRef.srcObject) {
       const videoTracks = videoRef.srcObject.getVideoTracks();
       if (videoTracks.length > 0 && !videoTracks[0].enabled) {
-        console.log('Video track is disabled, stopping segmentation');
-        // Clear the canvas when video is disabled
-        const canvasCtx = canvasRef.getContext("2d");
+        console.log('Video track is disabled, clearing canvas');
         canvasCtx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         return;
       }
     }
-    
-    const canvasCtx = canvasRef.getContext("2d");
-    canvasRef.width = videoRef.videoWidth;
-    canvasRef.height = videoRef.videoHeight;
     
     let lastFrameTime = 0;
     const fps = 15; // Reduce FPS to improve performance
