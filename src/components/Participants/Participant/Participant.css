@@ -56,18 +56,19 @@
   }
   
   .canvas{
-    background-color: #009cb6;
+    background-color: transparent;
     height: 100%;
     width: 100%;
     position: absolute;
     object-fit: contain;
     border-radius: 5px;
     min-height: 200px;
+    top: 0;
+    left: 0;
   }
   
   .canvas-disabled {
-    opacity: 0 !important;
-    pointer-events: none;
+    display: none !important;
   }
   @media screen and (max-width: 800px) {
     .canvas{

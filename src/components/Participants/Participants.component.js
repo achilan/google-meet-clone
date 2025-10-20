@@ -117,9 +117,10 @@ const Participants = (props) => {
         
         // Draw video directly to canvas when no background is applied
         if (videoRefx && canvasRefx && participant.currentUser) {
+          console.log('Mobile: Starting direct video draw for participant:', element);
           setTimeout(() => {
             drawVideoToCanvas(videoRefx, canvasRefx, element);
-          }, 100);
+          }, 500);
         }
       }
     }
@@ -150,6 +151,17 @@ const Participants = (props) => {
   }, [props.currentUser?.video, props.stream]);
 
   const drawVideoToCanvas = (videoRef, canvasRef, participantId) => {
+    console.log('Mobile: drawVideoToCanvas called for participant:', participantId);
+    console.log('Mobile: Video element:', videoRef);
+    console.log('Mobile: Canvas element:', canvasRef);
+    console.log('Mobile: Video readyState:', videoRef?.readyState);
+    console.log('Mobile: Video dimensions:', videoRef?.videoWidth, 'x', videoRef?.videoHeight);
+    
+    if (!videoRef || !canvasRef) {
+      console.error('Mobile: Missing video or canvas element');
+      return;
+    }
+    
     const canvasCtx = canvasRef.getContext("2d");
     
     // Cancel any existing drawing loop for this participant
@@ -157,8 +169,23 @@ const Participants = (props) => {
       cancelAnimationFrame(drawingFrames.current[participantId]);
     }
     
+    // Make sure canvas is visible
+    canvasRef.style.display = 'block';
+    canvasRef.style.opacity = '1';
+    
+    let frameCount = 0;
     const drawFrame = () => {
-      if (!videoRef || !canvasRef || videoRef.readyState < 2) {
+      frameCount++;
+      
+      if (!videoRef || !canvasRef) {
+        console.log('Mobile: Video or canvas disappeared, stopping draw');
+        return;
+      }
+      
+      if (videoRef.readyState < 2) {
+        if (frameCount % 60 === 0) { // Log every 60 frames
+          console.log('Mobile: Video not ready, readyState:', videoRef.readyState);
+        }
         drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
         return;
       }
@@ -173,15 +200,22 @@ const Participants = (props) => {
         }
       }
       
-      canvasRef.width = videoRef.videoWidth;
-      canvasRef.height = videoRef.videoHeight;
-      
-      // Draw video directly to canvas
-      canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+      if (videoRef.videoWidth > 0 && videoRef.videoHeight > 0) {
+        canvasRef.width = videoRef.videoWidth;
+        canvasRef.height = videoRef.videoHeight;
+        
+        // Draw video directly to canvas
+        canvasCtx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
+        
+        if (frameCount === 1) {
+          console.log('Mobile: First frame drawn successfully!');
+        }
+      }
       
       drawingFrames.current[participantId] = requestAnimationFrame(drawFrame);
     };
     
+    console.log('Mobile: Starting draw loop');
     drawFrame();
   };
 
