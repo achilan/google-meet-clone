@@ -22,11 +22,6 @@ const MeetingFooter = (props) => {
   const initialVideoState = props.initialVideoState !== undefined ? props.initialVideoState : false;
   const initialMicState = props.initialMicState !== undefined ? props.initialMicState : true;
   
-  console.log('MeetingFooter props:', { 
-    initialVideoState: props.initialVideoState, 
-    initialMicState: props.initialMicState 
-  });
-  
   const [streamState, setStreamState] = useState({
     mic: initialMicState,
     video: initialVideoState,
@@ -59,10 +54,10 @@ const MeetingFooter = (props) => {
   };
 
   const onVideoClick = () => {
-    console.log('Video button clicked, current state:', streamState.video);
+    //console.log('Video button clicked, current state:', streamState.video);
     setStreamState((currentState) => {
       const newVideoState = !currentState.video;
-      console.log('Setting video state to:', newVideoState);
+      //console.log('Setting video state to:', newVideoState);
       return {
         ...currentState,
         video: newVideoState,

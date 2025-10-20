@@ -22,15 +22,15 @@ export const Participant = (props) => {
       const videoElement = videoRef.current;
       
       const handleLoadedMetadata = () => {
-        console.log('Video metadata loaded, video ready');
+        //console.log('Video metadata loaded, video ready');
       };
       
       const handleCanPlay = () => {
-        console.log('Video can play');
+        //console.log('Video can play');
       };
       
       const handleError = (e) => {
-        console.error('Video error:', e);
+        //console.error('Video error:', e);
       };
       
       // Add event listeners

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.component";
 import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
@@ -10,7 +11,9 @@ import { userReducer } from "./store/reducer";
 export const store = createStore(userReducer);
 ReactDOM.render(
     <Provider store={store}>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </Provider>,
   document.getElementById("root")
 );

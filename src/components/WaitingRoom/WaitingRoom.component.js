@@ -3,7 +3,6 @@ import "./WaitingRoom.css";
 
 const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
   const [userType, setUserType] = useState("");
-  const [doctorCode, setDoctorCode] = useState("");
   const [patientName, setPatientName] = useState("");
   const [isWaiting, setIsWaiting] = useState(false);
   
@@ -58,14 +57,28 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
       setHasMediaPermission(false);
     }
   };
-
-  // Start video stream
+  const verifyRoleToken = async (token) => {
+    try {
+      if (!token) return null;
+      if (token === 'd') return 'doctor';
+      if (token === 'p') return 'patient';
+      try {
+        const role = atob(token);
+        if (role === 'doctor' || role === 'patient') return role;
+      } catch (e) {
+        return null;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
   const startVideoStream = async () => {
     try {
-      console.log('Starting video stream with camera:', selectedCamera, 'microphone:', selectedMicrophone);
+      //console.log('Starting video stream with camera:', selectedCamera, 'microphone:', selectedMicrophone);
       
       if (stream) {
-        console.log('Stopping existing stream');
+        //console.log('Stopping existing stream');
         stream.getTracks().forEach(track => track.stop());
       }
 
@@ -74,7 +87,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
         audio: selectedMicrophone ? { deviceId: { exact: selectedMicrophone } } : true
       };
       
-      console.log('getUserMedia constraints:', constraints);
+      //console.log('getUserMedia constraints:', constraints);
 
       const newStream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -82,30 +95,30 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = newStream;
-        console.log('Video stream set to video element');
+        //console.log('Video stream set to video element');
       }
 
       // Apply current audio/video states
       const audioTrack = newStream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = isMicrophoneOn;
-        console.log('Audio track enabled:', isMicrophoneOn);
+        //console.log('Audio track enabled:', isMicrophoneOn);
       }
 
       const videoTrack = newStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = isCameraOn;
-        console.log('Video track enabled:', isCameraOn);
+        //console.log('Video track enabled:', isCameraOn);
       }
       
-      console.log('Video stream started successfully');
+      //console.log('Video stream started successfully');
 
     } catch (error) {
       console.error('Error starting video stream:', error);
       // Fallback to default devices if exact device fails
       if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
         try {
-          console.log('Trying fallback with default devices');
+          //console.log('Trying fallback with default devices');
           const fallbackStream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true
@@ -127,9 +140,9 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
             videoTrack.enabled = isCameraOn;
           }
           
-          console.log('Fallback stream started successfully');
+          //console.log('Fallback stream started successfully');
         } catch (fallbackError) {
-          console.error('Fallback stream also failed:', fallbackError);
+          //console.error('Fallback stream also failed:', fallbackError);
         }
       }
     }
@@ -145,11 +158,29 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
       
       // Modal mode para doctor en navegador, tablets o cuando está en un iframe
       setIsModalMode(isTablet || isInModal);
-      console.log(`Environment - Mobile: ${isMobile}, Tablet: ${isTablet}, Desktop: ${isDesktop}, InModal: ${isInModal}`);
+      //console.log(`Environment - Mobile: ${isMobile}, Tablet: ${isTablet}, Desktop: ${isDesktop}, InModal: ${isInModal}`);
     };
     
     checkEnvironment();
-    getMediaDevices(); // Get media devices on component mount
+
+    // If a role token is present in the URL, verify it and set userType automatically.
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const roleToken = params.get('rt');
+      if (roleToken) {
+        const role = await verifyRoleToken(roleToken);
+        if (role) {
+          setUserType(role);
+          // trigger media enumeration after role is established
+          await getMediaDevices();
+        } else {
+          alert('Token de rol inválido o expirado. Por favor use el enlace correcto.');
+        }
+      } else {
+        // No token provided: inform the user to use the proper link
+        //alert('No se encontró token de rol (rt) en la URL. Por favor use el enlace proporcionado por el sistema.');
+      }
+    })();
     
     // Recheck on resize and orientation change
     window.addEventListener('resize', checkEnvironment);
@@ -170,7 +201,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
   // Start video when user type is selected and devices are ready
   useEffect(() => {
     if (userType && hasMediaPermission && selectedCamera) {
-      console.log('useEffect triggered - starting video stream');
+      //console.log('useEffect triggered - starting video stream');
       startVideoStream();
     }
   }, [userType, hasMediaPermission, selectedCamera, selectedMicrophone]);
@@ -199,7 +230,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
 
   // Handle camera change
   const handleCameraChange = async (deviceId) => {
-    console.log('Changing camera to:', deviceId);
+    //console.log('Changing camera to:', deviceId);
     setSelectedCamera(deviceId);
     
     // If we already have a stream and permission, restart it immediately
@@ -231,7 +262,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
           videoTrack.enabled = isCameraOn;
         }
         
-        console.log('Camera changed successfully');
+        //console.log('Camera changed successfully');
       } catch (error) {
         console.error('Error changing camera:', error);
       }
@@ -240,7 +271,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
 
   // Handle microphone change
   const handleMicrophoneChange = async (deviceId) => {
-    console.log('Changing microphone to:', deviceId);
+    //console.log('Changing microphone to:', deviceId);
     setSelectedMicrophone(deviceId);
     
     // If we already have a stream and permission, restart it immediately
@@ -280,14 +311,9 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
   };
 
   // Simple doctor authentication - in production, this should be more secure
-  const DOCTOR_ACCESS_CODE = "MEDICO2025";
-
   const handleJoinAsDoctor = () => {
-    if (doctorCode === DOCTOR_ACCESS_CODE) {
-      onJoinAsDoctor("Dr. " + (doctorCode.includes("DOC") ? "Doctor" : doctorCode));
-    } else {
-      alert("Código de doctor incorrecto. Contacte con el administrador.");
-    }
+    // No manual code required: role is validated via token in the URL
+    onJoinAsDoctor("Doctor");
   };
 
   const handleJoinAsPatient = () => {
@@ -315,41 +341,10 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
       <div className="waiting-room-container">
         <div className="header-section">
           <h1>
-            <span className="meet-icon">📹</span>
-            Teleconsulta Médica 
+            <span className="meet-icon"></span>
+            Videoconsulta Médica
           </h1>
-          <p className="subtitle">Sala de espera segura</p>
         </div>
-        
-        {!userType && (
-          <div className="user-type-selection">
-            <h2>¿Cómo quiere unirse?</h2>
-            <div className="button-group">
-              <button 
-                className="btn btn-doctor" 
-                onClick={() => setUserType("doctor")}
-              >
-                <span className="btn-icon">👨‍⚕️</span>
-                <div className="btn-content">
-                  <span className="btn-title">Soy Doctor</span>
-                  <span className="btn-subtitle">Iniciar consulta</span>
-                </div>
-              </button>
-              <button 
-                className="btn btn-patient" 
-                onClick={() => setUserType("patient")}
-              >
-                <span className="btn-icon">👤</span>
-                <div className="btn-content">
-                  <span className="btn-title">Soy Paciente</span>
-                  <span className="btn-subtitle">Unirse a consulta</span>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Video Preview Section */}
         {userType && hasMediaPermission && (
           <div className="video-preview-section">
             <div className="video-container">
@@ -437,37 +432,22 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
             </button>
           </div>
         )}
-
         {userType === "doctor" && (
           <div className="doctor-login">
             <div className="login-card">
               <div className="card-header">
                 <span className="card-icon">👨‍⚕️</span>
                 <h2>Acceso Médico</h2>
-                <p>Ingrese sus credenciales para iniciar la consulta</p>
-              </div>
-              <div className="form-group">
-                <label htmlFor="doctor-code">
-                  <span className="input-icon">🔐</span>
-                  Código de Acceso
-                </label>
-                <input
-                  id="doctor-code"
-                  type="password"
-                  value={doctorCode}
-                  onChange={(e) => setDoctorCode(e.target.value)}
-                  placeholder="Ingrese su código médico"
-                  onKeyPress={(e) => e.key === 'Enter' && handleJoinAsDoctor()}
-                  className="professional-input"
-                />
+                <p>Inicie la consulta cuando esté listo. Asegúrese de permitir cámara y micrófono.</p>
               </div>
               <div className="button-group vertical">
-                <button className="btn btn-primary large" onClick={handleJoinAsDoctor}>
+                <button
+                  className="btn btn-primary large"
+                  onClick={handleJoinAsDoctor}
+                  disabled={!hasMediaPermission}
+                >
                   <span className="btn-icon">🚀</span>
-                  Iniciar Teleconsulta
-                </button>
-                <button className="btn btn-outline" onClick={() => setUserType("")}>
-                  ← Cambiar tipo de usuario
+                  {hasMediaPermission ? "Iniciar Teleconsulta" : "Permita cámara y micrófono"}
                 </button>
               </div>
             </div>
@@ -517,9 +497,6 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
                 >
                   <span className="btn-icon">💬</span>
                   {isDoctorPresent ? "Ingresar a Consulta" : "Esperando al Doctor..."}
-                </button>
-                <button className="btn btn-outline" onClick={() => setUserType("")}>
-                  ← Cambiar tipo de usuario
                 </button>
               </div>
             </div>

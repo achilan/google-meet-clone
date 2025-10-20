@@ -1,6 +1,6 @@
 import MainScreen from "./components/MainScreen/MainScreen.component";
 import WaitingRoom from "./components/WaitingRoom/WaitingRoom.component";
-import firepadRef, { db } from "./server/firebase";
+import firepadRef, { db, firebaseInitError } from "./server/firebase";
 import "./App.css";
 import { useEffect, useState } from "react";
 import {
@@ -35,6 +35,10 @@ function App(props) {
   };
   useEffect(async () => {
     if (!hasJoined) return;
+    if (firebaseInitError) {
+      console.error('Firebase not initialized correctly; skipping join flow');
+      return;
+    }
     
     // Clean up existing user data if reconnecting
     if (currentUserKey) {
@@ -101,7 +105,7 @@ function App(props) {
       }
     };
     
-    connectedRef.on("value", connectionHandler);
+  connectedRef.on("value", connectionHandler);
     
     // Cleanup function
     return () => {
@@ -109,13 +113,16 @@ function App(props) {
     };
   }, [hasJoined, currentUserType]);
 
-  const connectedRef = db.database().ref(".info/connected");
-  console.log(connectedRef)
-  const participantRef = firepadRef.child("participants");
-  console.log(participantRef)
+  const connectedRef = !firebaseInitError ? db.database().ref(".info/connected") : null;
+  const participantRef = !firebaseInitError ? firepadRef.child("participants") : null;
   
   // Monitor for doctor presence
   useEffect(() => {
+    if (firebaseInitError || !participantRef) {
+      setIsDoctorPresent(false);
+      return;
+    }
+
     participantRef.on("value", (snapshot) => {
       const participants = snapshot.val();
       if (participants) {
@@ -127,19 +134,27 @@ function App(props) {
         setIsDoctorPresent(false);
       }
     });
-    
+
     return () => {
       participantRef.off();
     };
   }, []);
   
   const handleJoinAsDoctor = (doctorName) => {
+    if (firebaseInitError) {
+      alert('No es posible unirse: error de inicialización del servidor. Contacte al administrador.');
+      return;
+    }
     window.userName = doctorName;
     setCurrentUserType("doctor");
     setHasJoined(true);
   };
   
   const handleJoinAsPatient = (patientName) => {
+    if (firebaseInitError) {
+      alert('No es posible unirse: error de inicialización del servidor. Contacte al administrador.');
+      return;
+    }
     window.userName = patientName;
     setCurrentUserType("patient");
     setHasJoined(true);
@@ -219,6 +234,11 @@ function App(props) {
 
   return (
     <div className="App">
+      {firebaseInitError && (
+        <div style={{background: '#ffe6e6', color: '#800', padding: 12, textAlign: 'center', position: 'fixed', top: 0, width: '100%', zIndex: 1000}}>
+          <strong>Problema de configuración:</strong> No se pudo inicializar la conexión con Firebase. Algunas funcionalidades estarán deshabilitadas. Contacte al administrador.
+        </div>
+      )}
       {!hasJoined ? (
         <WaitingRoom 
           onJoinAsDoctor={handleJoinAsDoctor}
