@@ -128,7 +128,9 @@ const Participants = (props) => {
   }
   useEffect(() => {
     enableBackground();
-  }, [props.participants]);
+    // Handle current user canvas
+    handleCurrentUserCanvas();
+  }, [props.participants, props.background]);
   
   // Monitor video state changes for current user
   useEffect(() => {
@@ -148,7 +150,44 @@ const Participants = (props) => {
         }
       }
     }
-  }, [props.currentUser?.video, props.stream]);
+    // Also handle canvas when video state changes
+    handleCurrentUserCanvas();
+  }, [props.currentUser?.video, props.stream, props.background]);
+
+  const handleCurrentUserCanvas = () => {
+    if (!props.currentUser) return;
+    
+    const currentUserIndex = Object.keys(props.participants)[0];
+    const videoRefx = document.getElementById(`participantVideo${currentUserIndex}`);
+    const canvasRefx = document.getElementById(`participantCanvas${currentUserIndex}`);
+    
+    console.log('Mobile: Handling current user canvas');
+    console.log('Mobile: Current user has background:', props.background);
+    console.log('Mobile: Current user video enabled:', props.currentUser.video);
+    
+    if (props.background) {
+      // Background is enabled, cancel direct drawing
+      if (drawingFrames.current[currentUserIndex]) {
+        console.log('Mobile: Canceling direct draw for background');
+        cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
+        delete drawingFrames.current[currentUserIndex];
+      }
+    } else if (props.currentUser.video) {
+      // No background and video is enabled, draw directly
+      if (videoRefx && canvasRefx) {
+        console.log('Mobile: Starting direct draw for current user');
+        setTimeout(() => {
+          drawVideoToCanvas(videoRefx, canvasRefx, currentUserIndex);
+        }, 500);
+      }
+    } else {
+      // Video is disabled, clear canvas
+      if (canvasRefx) {
+        const canvasCtx = canvasRefx.getContext("2d");
+        canvasCtx.clearRect(0, 0, canvasRefx.width, canvasRefx.height);
+      }
+    }
+  };
 
   const drawVideoToCanvas = (videoRef, canvasRef, participantId) => {
     console.log('Mobile: drawVideoToCanvas called for participant:', participantId);
