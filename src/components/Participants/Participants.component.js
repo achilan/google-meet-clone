@@ -136,32 +136,23 @@ const Participants = (props) => {
     );
   }
   useEffect(() => {
-    enableBackground();
-    // Handle current user canvas
-    handleCurrentUserCanvas();
+    // Small delay to ensure DOM elements exist
+    setTimeout(() => {
+      enableBackground();
+    }, 50);
   }, [props.participants, props.background]);
   
   // Monitor video state changes for current user
   useEffect(() => {
-    if (props.currentUser && videoRef.current && props.stream) {
-      const videoTracks = props.stream.getVideoTracks();
-      if (videoTracks.length > 0) {
-        console.log('Current user video state changed:', props.currentUser.video);
-        console.log('Video track enabled:', videoTracks[0].enabled);
-        
-        // If video is supposed to be on but track is disabled, or vice versa
-        if (props.currentUser.video && !videoTracks[0].enabled) {
-          console.log('Video should be on but track is disabled, enabling...');
-          videoTracks[0].enabled = true;
-        } else if (!props.currentUser.video && videoTracks[0].enabled) {
-          console.log('Video should be off but track is enabled, disabling...');
-          videoTracks[0].enabled = false;
-        }
-      }
-    }
-    // Also handle canvas when video state changes
-    handleCurrentUserCanvas();
-  }, [props.currentUser?.video, props.stream, props.background]);
+    console.log('Video/Background state changed - Video:', props.currentUser?.video, 'Background:', props.background);
+    
+    // Handle canvas changes with a small delay to prevent rapid updates
+    const timeoutId = setTimeout(() => {
+      handleCurrentUserCanvas();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [props.currentUser?.video, props.background]);
 
   const handleCurrentUserCanvas = () => {
     if (!props.currentUser) return;
@@ -173,39 +164,45 @@ const Participants = (props) => {
     console.log('Mobile: Handling current user canvas');
     console.log('Mobile: Current user has background:', props.background);
     console.log('Mobile: Current user video enabled:', props.currentUser.video);
-    console.log('Mobile: Canvas element found:', !!canvasRefx);
-    console.log('Mobile: Video element found:', !!videoRefx);
     
-    // Temporarily disabled - need to distinguish between user-disabled vs processing state
-    /*if (!props.currentUser.video) {
-      // Video is completely disabled by user, clear canvas and stop any drawing
-      if (drawingFrames.current[currentUserIndex]) {
-        cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
-        delete drawingFrames.current[currentUserIndex];
-      }
-      if (canvasRefx) {
-        const canvasCtx = canvasRefx.getContext("2d");
-        canvasCtx.clearRect(0, 0, canvasRefx.width, canvasRefx.height);
-        console.log('Mobile: Video disabled by user, canvas cleared');
-      }
+    // Always cancel existing drawing to prevent conflicts
+    if (drawingFrames.current[currentUserIndex]) {
+      console.log('Mobile: Canceling existing drawing');
+      cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
+      delete drawingFrames.current[currentUserIndex];
+    }
+    
+    if (!videoRefx || !canvasRefx) {
+      console.log('Mobile: Missing video or canvas element');
       return;
-    }*/
+    }
+    
+    if (!props.currentUser.video) {
+      // Video is disabled, clear canvas and stop
+      const canvasCtx = canvasRefx.getContext("2d");
+      canvasCtx.clearRect(0, 0, canvasRefx.width, canvasRefx.height);
+      canvasRefx.style.display = 'none';
+      console.log('Mobile: Video disabled by user, canvas cleared and hidden');
+      return;
+    }
+    
+    // Video is enabled - set up canvas based on background setting
+    canvasRefx.style.display = 'block';
+    canvasRefx.style.opacity = '1';
     
     if (props.background) {
-      // Background is enabled, cancel direct drawing
-      if (drawingFrames.current[currentUserIndex]) {
-        console.log('Mobile: Canceling direct draw for background');
-        cancelAnimationFrame(drawingFrames.current[currentUserIndex]);
-        delete drawingFrames.current[currentUserIndex];
-      }
+      // Background enabled - use MediaPipe
+      canvasRefx.classList.remove("background-disabled");
+      canvasRefx.classList.add("background-enabled");
+      console.log('Mobile: Setting up MediaPipe segmentation');
     } else {
-      // No background and video is enabled, draw directly
-      if (videoRefx && canvasRefx) {
-        console.log('Mobile: Starting direct draw for current user');
-        setTimeout(() => {
-          drawVideoToCanvas(videoRefx, canvasRefx, currentUserIndex);
-        }, 500);
-      }
+      // No background - direct drawing with delay to avoid conflicts
+      canvasRefx.classList.remove("background-enabled");
+      canvasRefx.classList.add("background-disabled");
+      console.log('Mobile: Setting up direct video drawing');
+      setTimeout(() => {
+        drawVideoToCanvas(videoRefx, canvasRefx, currentUserIndex);
+      }, 100); // Reduced delay
     }
   };
 
@@ -234,6 +231,7 @@ const Participants = (props) => {
     canvasRef.classList.remove("background-enabled");
     canvasRef.classList.add("background-disabled");
     console.log('Mobile: Canvas classes set to:', canvasRef.className);
+    console.log('Mobile: Switching to direct drawing mode - MediaPipe will be blocked');
     
     let frameCount = 0;
     const drawFrame = () => {
@@ -282,6 +280,12 @@ const Participants = (props) => {
   };
 
   const mediapipeSegmentation = async (videoRef, canvasRef, image) => {
+    // Check if canvas is in direct drawing mode (background-disabled)
+    if (canvasRef && canvasRef.classList.contains('background-disabled')) {
+      console.log('Canvas is in direct drawing mode, skipping MediaPipe segmentation');
+      return;
+    }
+    
     // Check if video is enabled/available
     if (!videoRef || !canvasRef || videoRef.readyState < 2) {
       console.log('Video not ready for segmentation');
@@ -307,6 +311,12 @@ const Participants = (props) => {
     const frameInterval = 1000 / fps;
     
     const drawCanvas = async (currentTime) => {
+      // Check if canvas switched to direct drawing mode
+      if (canvasRef.classList.contains('background-disabled')) {
+        console.log('Canvas switched to direct drawing mode, stopping MediaPipe');
+        return;
+      }
+      
       if (currentTime - lastFrameTime < frameInterval) {
         requestAnimationFrame(drawCanvas);
         return;

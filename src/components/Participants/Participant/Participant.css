@@ -92,10 +92,12 @@
     }
   }
   .background-disabled{
-    display: none;
+    display: block;
+    z-index: 1;
   }
   .background-enabled{
     display: block;
+    z-index: 1;
   }
   .background1 {
     background-image: url('./../../../assets/1.jpg');
