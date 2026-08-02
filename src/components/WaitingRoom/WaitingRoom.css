@@ -2,12 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary-color: #009cb6;
-  --primary-hover: #007a8c;
-  --primary-light: #e0f7fa;
-  --secondary-color: #ff6400;
-  --secondary-hover: #e55a00;
-  --secondary-light: #fff3e0;
+  --primary-color: #2f6d78;
+  --primary-hover: #245861;
+  --primary-light: #eef3f4;
+  --secondary-color: #b85c54;
+  --secondary-hover: #a04e47;
+  --secondary-light: #f6ecea;
   --google-green: #34a853;
   --google-green-hover: #2d9142;
   --google-grey-50: #f8f9fa;
@@ -20,9 +20,9 @@
   --google-grey-700: #5f6368;
   --google-grey-800: #3c4043;
   --google-grey-900: #202124;
-  --shadow-1: 0 1px 2px 0 rgba(0,156,182,.3), 0 1px 3px 1px rgba(0,156,182,.15);
-  --shadow-2: 0 1px 2px 0 rgba(0,156,182,.3), 0 2px 6px 2px rgba(0,156,182,.15);
-  --shadow-3: 0 4px 8px 3px rgba(0,156,182,.15), 0 1px 3px rgba(0,156,182,.3);
+  --shadow-1: 0 1px 2px 0 rgba(15,23,26,.10), 0 1px 3px 1px rgba(15,23,26,.06);
+  --shadow-2: 0 2px 6px 0 rgba(15,23,26,.12), 0 1px 3px rgba(15,23,26,.08);
+  --shadow-3: 0 8px 24px 0 rgba(15,23,26,.14), 0 2px 6px rgba(15,23,26,.08);
   --border-radius-1: 8px;
   --border-radius-2: 12px;
   --border-radius-3: 16px;
@@ -37,7 +37,7 @@
   width: 100vw;
   min-height: 100dvh;
   height: 100dvh;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #007a8c 50%, var(--primary-color) 100%);
+  background: linear-gradient(160deg, #33707b 0%, #275a63 55%, #1f4a52 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -673,7 +673,7 @@
 .waiting-room.modal-mode {
   min-height: auto;
   max-height: 95vh;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #007a8c 100%);
+  background: linear-gradient(160deg, #33707b 0%, #275a63 55%, #1f4a52 100%);
   border-radius: var(--border-radius-3);
   padding: 32px;
   box-shadow: var(--shadow-3);
@@ -1054,7 +1054,7 @@
   
   .professional-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 156, 182, 0.1);
+    box-shadow: 0 0 0 3px rgba(47, 109, 120, 0.15);
   }
   
   .btn.large {
@@ -1415,8 +1415,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(0, 156, 182, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(255, 100, 0, 0.1) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(0, 0, 0, 0.06) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
 }
@@ -1443,7 +1443,7 @@
 
 .professional-input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 4px rgba(0, 156, 182, 0.2);
+  box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 4px rgba(47, 109, 120, 0.25);
 }
 
 /* Estado de carga mejorado */
@@ -1911,4 +1911,69 @@
     margin-top: 16px;
     padding: 16px;
   }
+}
+
+/* ---- Iconos SVG (reemplazan a los emojis): alineación y color sobrio ---- */
+.card-icon,
+.permission-icon,
+.waiting-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  opacity: 1;
+}
+
+.card-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--primary-light);
+}
+
+.permission-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--primary-light);
+}
+
+.waiting-icon {
+  margin: 0 auto 12px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary-color);
+}
+
+.setting-icon,
+.input-icon,
+.item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--google-grey-600);
+  opacity: 1;
+}
+
+.item-icon {
+  color: var(--primary-color);
+}
+
+.control-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-off-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  opacity: 0.85;
 }

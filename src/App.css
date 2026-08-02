@@ -27,8 +27,8 @@
 
 /* Theme colors */
 :root {
-  --primary-color: #009cb6;
-  --secondary-color: #ff6400;
-  --primary-light: rgba(0, 156, 182, 0.1);
-  --secondary-light: rgba(255, 100, 0, 0.1);
+  --primary-color: #2f6d78;
+  --secondary-color: #b85c54;
+  --primary-light: rgba(47, 109, 120, 0.1);
+  --secondary-light: rgba(184, 92, 84, 0.1);
 }

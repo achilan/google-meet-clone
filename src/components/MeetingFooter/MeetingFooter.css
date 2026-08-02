@@ -121,13 +121,13 @@ div[disabled]
   max-height: 85vh !important;
   overflow: hidden !important;
   border-radius: 15px !important;
-  box-shadow: 0 20px 60px rgba(0, 156, 182, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 26, 0.18) !important;
   padding: 0 !important;
 }
 
 .react-responsive-modal-overlay,
 .custom-modal-overlay {
-  background: rgba(0, 156, 182, 0.1) !important;
+  background: rgba(47, 109, 120, 0.10) !important;
   backdrop-filter: blur(5px) !important;
 }
 .background-selection{
@@ -145,7 +145,7 @@ div[disabled]
 
 .background-selection:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(0, 156, 182, 0.3);
+  box-shadow: 0 8px 25px rgba(15, 23, 26, 0.18);
 }
 
 .background-selection::after {
@@ -155,7 +155,7 @@ div[disabled]
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 156, 182, 0.1);
+  background: rgba(47, 109, 120, 0.10);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -167,8 +167,8 @@ div[disabled]
   z-index: 9999999!important;
 }
 .active-background{
-  border: 3px solid #ff6400 !important;
-  box-shadow: 0 0 0 2px rgba(255, 100, 0, 0.3), 0 8px 25px rgba(255, 100, 0, 0.4) !important;
+  border: 3px solid #2f6d78 !important;
+  box-shadow: 0 0 0 2px rgba(47, 109, 120, 0.35), 0 8px 25px rgba(47, 109, 120, 0.30) !important;
 }
 
 .gray{
@@ -195,7 +195,7 @@ div[disabled]
 }
 
 .modal-header h2 {
-  color: #009cb6;
+  color: #2f6d78;
   font-size: 24px;
   font-weight: 600;
   margin: 0;
@@ -219,8 +219,8 @@ div[disabled]
 }
 
 .close-button:hover {
-  color: #ff6400;
-  background-color: rgba(255, 100, 0, 0.1);
+  color: #b85c54;
+  background-color: rgba(184, 92, 84, 0.10);
   transform: scale(1.1);
 }
 

@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./WaitingRoom.css";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Lock,
+  Info,
+  Wifi,
+  Volume,
+  User,
+  Stethoscope,
+  Clock,
+  ShieldCheck,
+} from "../Shared/icons";
 
 const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
   const [userType, setUserType] = useState("");
@@ -357,7 +371,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
               />
               {!isCameraOn && (
                 <div className="camera-off-placeholder">
-                  <span className="camera-off-icon">📷</span>
+                  <span className="camera-off-icon"><VideoOff size={30} strokeWidth={1.6} /></span>
                   <span>Cámara desactivada</span>
                 </div>
               )}
@@ -369,21 +383,25 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
                 onClick={toggleCamera}
                 title={isCameraOn ? 'Desactivar cámara' : 'Activar cámara'}
               >
-                <span className="control-icon">{isCameraOn ? '📹' : '📷'}</span>
+                <span className="control-icon">
+                  {isCameraOn ? <Video size={20} strokeWidth={2} /> : <VideoOff size={20} strokeWidth={2} />}
+                </span>
               </button>
               <button 
                 className={`control-btn ${isMicrophoneOn ? 'active' : 'inactive'}`}
                 onClick={toggleMicrophone}
                 title={isMicrophoneOn ? 'Desactivar micrófono' : 'Activar micrófono'}
               >
-                <span className="control-icon">{isMicrophoneOn ? '🎤' : '🔇'}</span>
+                <span className="control-icon">
+                  {isMicrophoneOn ? <Mic size={20} strokeWidth={2} /> : <MicOff size={20} strokeWidth={2} />}
+                </span>
               </button>
             </div>
 
             <div className="device-settings">
               <div className="setting-group">
                 <label htmlFor="camera-select">
-                  <span className="setting-icon"></span>
+                  <span className="setting-icon"><Video size={16} strokeWidth={2} /></span>
                   Cámara
                 </label>
                 <select 
@@ -402,7 +420,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
 
               <div className="setting-group">
                 <label htmlFor="mic-select">
-                  <span className="setting-icon">🎤</span>
+                  <span className="setting-icon"><Mic size={16} strokeWidth={2} /></span>
                   Micrófono
                 </label>
                 <select 
@@ -424,7 +442,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
 
         {!hasMediaPermission && userType && (
           <div className="permission-request">
-            <div className="permission-icon">🔒</div>
+            <div className="permission-icon"><Lock size={40} strokeWidth={1.6} /></div>
             <h3>Se necesita acceso a cámara y micrófono</h3>
             <p>Para continuar, permita el acceso a su cámara y micrófono cuando su navegador se lo solicite.</p>
             <button className="btn btn-primary" onClick={getMediaDevices}>
@@ -436,7 +454,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
           <div className="doctor-login">
             <div className="login-card">
               <div className="card-header">
-                <span className="card-icon">👨‍⚕️</span>
+                <span className="card-icon"><Stethoscope size={40} strokeWidth={1.6} /></span>
                 <h2>Acceso Médico</h2>
                 <p>Inicie la consulta cuando esté listo. Asegúrese de permitir cámara y micrófono.</p>
               </div>
@@ -446,7 +464,6 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
                   onClick={handleJoinAsDoctor}
                   disabled={!hasMediaPermission}
                 >
-                  <span className="btn-icon">🚀</span>
                   {hasMediaPermission ? "Iniciar Teleconsulta" : "Permita cámara y micrófono"}
                 </button>
               </div>
@@ -458,14 +475,14 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
           <div className="patient-login">
             <div className="login-card">
               <div className="card-header">
-                <span className="card-icon">👤</span>
+                <span className="card-icon"><User size={40} strokeWidth={1.6} /></span>
                 <h2>Acceso del Paciente</h2>
                 <p>Ingrese sus datos para unirse a la consulta</p>
               </div>
               
               {!isDoctorPresent && (
                 <div className="waiting-message modern">
-                  <div className="waiting-icon">⏳</div>
+                  <div className="waiting-icon"><Clock size={32} strokeWidth={1.6} /></div>
                   <h3>Esperando al doctor</h3>
                   <p>El doctor aún no se ha conectado. Por favor, espere un momento.</p>
                   <div className="loading-spinner modern"></div>
@@ -474,7 +491,7 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
               
               <div className="form-group">
                 <label htmlFor="patient-name">
-                  <span className="input-icon">👤</span>
+                  <span className="input-icon"><User size={16} strokeWidth={2} /></span>
                   Nombre completo
                 </label>
                 <input
@@ -495,7 +512,6 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
                   onClick={handleJoinAsPatient}
                   disabled={!isDoctorPresent || !patientName.trim()}
                 >
-                  <span className="btn-icon">💬</span>
                   {isDoctorPresent ? "Ingresar a Consulta" : "Esperando al Doctor..."}
                 </button>
               </div>
@@ -505,24 +521,24 @@ const WaitingRoom = ({ onJoinAsDoctor, onJoinAsPatient, isDoctorPresent }) => {
 
         <div className="info-section modern">
           <div className="info-header">
-            <span className="info-icon">ℹ️</span>
+            <span className="info-icon"><Info size={20} strokeWidth={1.8} /></span>
             <h3>Información Importante</h3>
           </div>
           <div className="info-grid">
             <div className="info-item">
-              <span className="item-icon">🌐</span>
+              <span className="item-icon"><Wifi size={18} strokeWidth={1.8} /></span>
               <span>Conexión estable a internet requerida</span>
             </div>
             <div className="info-item">
-              <span className="item-icon">🔊</span>
+              <span className="item-icon"><Volume size={18} strokeWidth={1.8} /></span>
               <span>Verifique cámara y micrófono</span>
             </div>
             <div className="info-item">
-              <span className="item-icon">👨‍⚕️</span>
+              <span className="item-icon"><Stethoscope size={18} strokeWidth={1.8} /></span>
               <span>El doctor debe iniciar primero</span>
             </div>
             <div className="info-item">
-              <span className="item-icon">🔒</span>
+              <span className="item-icon"><ShieldCheck size={18} strokeWidth={1.8} /></span>
               <span>Consulta completamente privada</span>
             </div>
           </div>

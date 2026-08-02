@@ -1,6 +1,6 @@
 
   .video{
-    background-color: #009cb6;
+    background-color: #0b141a;
     height: 100%;
     width: 100%;
     position: relative;
@@ -19,26 +19,33 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #009cb6 0%, #007a8c 100%);
+    background: radial-gradient(circle at 50% 38%, #1f3240 0%, #0b141a 88%);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
+    border-radius: inherit;
     z-index: 2;
   }
-  
+
   .video-placeholder-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: white;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.72);
     text-align: center;
   }
-  
+
   .video-off-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
   }
   
   .video-off-text {
@@ -79,8 +86,9 @@
     }
     
     .video-off-icon {
-      font-size: 36px;
-      margin-bottom: 8px;
+      width: 60px;
+      height: 60px;
+      margin-bottom: 10px;
     }
     
     .video-off-text {
