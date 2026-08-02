@@ -92,7 +92,8 @@ const MainScreen = (props) => {
 
   const onVideoClick = (videoEnabled) => {
     const raw = rawStreamRef.current;
-    const rawVideo = raw && raw.getVideoTracks()[0];
+    if (!raw) return;
+    const rawVideo = raw.getVideoTracks()[0];
     if (rawVideo) rawVideo.enabled = videoEnabled;
 
     // Reflejar el estado en el track procesado y pausar/reanudar el procesador.

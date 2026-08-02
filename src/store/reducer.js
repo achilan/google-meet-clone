@@ -85,7 +85,11 @@ export const userReducer = (state = defaultUserState, action) => {
     return state;
   } else if (action.type === UPDATE_USER) {
     let payload = action.payload;
+    // Puede dispararse antes de que exista el usuario actual (efectos del footer
+    // al montar): ignorar en ese caso para no romper el store.
+    if (!state.currentUser) return state;
     const userId = Object.keys(state.currentUser)[0];
+    if (!userId) return state;
     updatePreference(userId, payload.currentUser);
     state.currentUser[userId] = {
       ...state.currentUser[userId],
@@ -93,7 +97,9 @@ export const userReducer = (state = defaultUserState, action) => {
       ...state.background
     };
     state.currentUser[userId].background = state.background;
-    state.participants[userId].className = state.className;
+    if (state.participants[userId]) {
+      state.participants[userId].className = state.className;
+    }
     state = {
       ...state,
       currentUser: { ...state.currentUser },
