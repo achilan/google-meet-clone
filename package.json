@@ -27,7 +27,7 @@
   },
   "scripts": {
     "dev": "react-scripts --openssl-legacy-provider start",
-    "start": "HTTPS=true SSL_CRT_FILE=./certificate/certificate.crt SSL_KEY_FILE=./certificate/private.key PORT=443 HOST=videocall.mdc-server.com react-scripts --openssl-legacy-provider start",
+    "start": "HTTPS=true SSL_CRT_FILE=./certificate/certificate.crt SSL_KEY_FILE=./certificate/private.key PORT=443 HOST=meeting.md-services.pro react-scripts --openssl-legacy-provider start",
     "generate-rt": "node scripts/generateRoleToken.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
