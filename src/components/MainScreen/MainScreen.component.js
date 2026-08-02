@@ -3,61 +3,113 @@ import MeetingFooter from "../MeetingFooter/MeetingFooter.component";
 import Participants from "../Participants/Participants.component";
 import "./MainScreen.css";
 import { connect } from "react-redux";
-import { setMainStream, updateUser, setBackgroundStream,setBackgroundPicture } from "../../store/actioncreator";
+import {
+  setMainStream,
+  updateUser,
+  setBackgroundStream,
+  setBackgroundPicture,
+} from "../../store/actioncreator";
+import { BackgroundProcessor, BLUR_BACKGROUND } from "../../server/backgroundProcessor";
+
+// Resuelve el valor de `className` a la imagen que usa el procesador:
+// el centinela de desenfoque (o vacío) => null (usa el propio video desenfocado).
+const resolveBackgroundImage = (className) =>
+  !className || className === BLUR_BACKGROUND ? null : className;
 
 const MainScreen = (props) => {
   const participantRef = useRef(props.participants);
-  const [background, setBackground] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [isMicEnabled, setIsMicEnabled] = useState(true);
 
-  // Check initial stream state when component mounts
+  // Cámara cruda (fuente de verdad para mic/cámara). El track saliente puede ser
+  // este mismo o el procesado por el BackgroundProcessor cuando hay fondo virtual.
+  const rawStreamRef = useRef(null);
+  const displayStreamRef = useRef(null);
+  const processorRef = useRef(null);
+  const processedTrackRef = useRef(null);
+  const classNameRef = useRef(props.className);
+
+  // Mantener rawStreamRef con la cámara cruda; ignorar el stream de display propio.
   useEffect(() => {
-    if (props.stream) {
-      const videoTrack = props.stream.getVideoTracks()[0];
-      const audioTrack = props.stream.getAudioTracks()[0];
-      
-      if (videoTrack) {
-        setIsVideoEnabled(videoTrack.enabled);
-      }
-      if (audioTrack) {
-        setIsMicEnabled(audioTrack.enabled);
-      }
+    if (props.stream && props.stream !== displayStreamRef.current) {
+      rawStreamRef.current = props.stream;
     }
   }, [props.stream]);
-  const onMicClick = (micEnabled) => {
-    if (props.stream) {
-      props.stream.getAudioTracks()[0].enabled = micEnabled;
-      props.updateUser({ audio: micEnabled });
-      setIsMicEnabled(micEnabled);
+
+  useEffect(() => {
+    classNameRef.current = props.className;
+  }, [props.className]);
+
+  // Estado inicial de la cámara/mic al montar.
+  useEffect(() => {
+    const raw = rawStreamRef.current || props.stream;
+    if (raw) {
+      const videoTrack = raw.getVideoTracks()[0];
+      const audioTrack = raw.getAudioTracks()[0];
+      if (videoTrack) setIsVideoEnabled(videoTrack.enabled);
+      if (audioTrack) setIsMicEnabled(audioTrack.enabled);
     }
-  };
-  const onVideoClick = (videoEnabled) => {
-    console.log('MainScreen onVideoClick called with:', videoEnabled);
-    if (props.stream) {
-      const videoTrack = props.stream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = videoEnabled;
-        console.log('Video track enabled set to:', videoEnabled);
+  }, [props.stream]);
+
+  // Liberar el procesador al desmontar.
+  useEffect(() => {
+    return () => {
+      if (processorRef.current) {
+        processorRef.current.destroy();
+        processorRef.current = null;
       }
-      props.updateUser({ video: videoEnabled });
-      setIsVideoEnabled(videoEnabled);
-    }
-  };
+    };
+  }, []);
 
   useEffect(() => {
     participantRef.current = props.participants;
   }, [props.participants]);
 
-  const updateStream = (stream) => {
-    for (let key in participantRef.current) {
-      const sender = participantRef.current[key];
-      if (sender.currentUser) continue;
-      const peerConnection = sender.peerConnection
+  // Reemplaza el track de video saliente en todas las peer connections.
+  const replaceOutgoingVideo = (track) => {
+    const participants = participantRef.current || {};
+    for (let key in participants) {
+      const sender = participants[key];
+      if (sender.currentUser || !sender.peerConnection) continue;
+      const videoSender = sender.peerConnection
         .getSenders()
         .find((s) => (s.track ? s.track.kind === "video" : false));
-      peerConnection.replaceTrack(stream.getVideoTracks()[0]);
+      if (videoSender) {
+        videoSender.replaceTrack(track).catch(() => {});
+      }
     }
+  };
+
+  const onMicClick = (micEnabled) => {
+    const raw = rawStreamRef.current;
+    const audioTrack = raw && raw.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = micEnabled;
+      props.updateUser({ audio: micEnabled });
+      setIsMicEnabled(micEnabled);
+    }
+  };
+
+  const onVideoClick = (videoEnabled) => {
+    const raw = rawStreamRef.current;
+    const rawVideo = raw && raw.getVideoTracks()[0];
+    if (rawVideo) rawVideo.enabled = videoEnabled;
+
+    // Reflejar el estado en el track procesado y pausar/reanudar el procesador.
+    if (processedTrackRef.current) processedTrackRef.current.enabled = videoEnabled;
+    if (processorRef.current) {
+      if (videoEnabled) processorRef.current.start();
+      else processorRef.current.stop();
+    }
+
+    props.updateUser({ video: videoEnabled });
+    setIsVideoEnabled(videoEnabled);
+  };
+
+  // --- Compartir pantalla (deshabilitado en la UI, se conserva la lógica) ---
+  const updateStream = (stream) => {
+    replaceOutgoingVideo(stream.getVideoTracks()[0]);
+    displayStreamRef.current = null;
     props.setMainStream(stream);
   };
 
@@ -66,13 +118,8 @@ const MainScreen = (props) => {
       audio: true,
       video: true,
     });
-
-    localStream.getVideoTracks()[0].enabled = Object.values(
-      props.currentUser
-    )[0].video;
-
+    localStream.getVideoTracks()[0].enabled = Object.values(props.currentUser)[0].video;
     updateStream(localStream);
-
     props.updateUser({ screen: false });
   };
 
@@ -81,38 +128,68 @@ const MainScreen = (props) => {
     if (navigator.getDisplayMedia) {
       mediaStream = await navigator.getDisplayMedia({ video: true });
     } else if (navigator.mediaDevices.getDisplayMedia) {
-      mediaStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-      });
+      mediaStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
     } else {
       mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { mediaSource: "screen" },
       });
     }
-
     mediaStream.getVideoTracks()[0].onended = onScreenShareEnd;
-
     updateStream(mediaStream);
-
     props.updateUser({ screen: true });
   };
+
+  // --- Fondo virtual: segmentación en el EMISOR ---
   const onChangeBackground = async (backgroundEnabled) => {
-    if (props.stream) {
-      if (backgroundEnabled) {
-        await props.setBackgroundStream(backgroundEnabled);
-        await props.updateUser({ background: backgroundEnabled });
-      }else{
-        await props.setBackgroundStream(false);
-        await props.updateUser({ background: false });
+    const raw = rawStreamRef.current;
+    if (!raw || raw.getVideoTracks().length === 0) return;
+
+    if (backgroundEnabled) {
+      if (!processorRef.current) {
+        processorRef.current = new BackgroundProcessor();
       }
+      const proc = processorRef.current;
+      await proc.setInputStream(raw);
+      await proc.setBackgroundImage(resolveBackgroundImage(classNameRef.current));
+      proc.start();
+
+      const processedTrack = proc.getOutputStream().getVideoTracks()[0];
+      processedTrackRef.current = processedTrack;
+      processedTrack.enabled = raw.getVideoTracks()[0].enabled;
+
+      // Enviar el track procesado a los peers y mostrarlo localmente.
+      replaceOutgoingVideo(processedTrack);
+      const display = new MediaStream();
+      display.addTrack(processedTrack);
+      raw.getAudioTracks().forEach((t) => display.addTrack(t));
+      displayStreamRef.current = display;
+      props.setMainStream(display);
+
+      props.setBackgroundStream(true);
+      props.updateUser({ background: true });
+    } else {
+      const rawVideo = raw.getVideoTracks()[0];
+      replaceOutgoingVideo(rawVideo);
+      if (processorRef.current) processorRef.current.stop();
+      processedTrackRef.current = null;
+      displayStreamRef.current = null;
+      props.setMainStream(raw);
+
+      props.setBackgroundStream(false);
+      props.updateUser({ background: false });
     }
-  }
+  };
+
   const onChangeBackgroundPicture = async (className) => {
-    if (props.stream) {
-      await props.setBackgroundPicture(className);
-      await props.updateUser({ className: className });
+    props.setBackgroundPicture(className);
+    props.updateUser({ className: className });
+    // Actualiza la imagen en vivo si el procesador ya está activo (incluye el
+    // caso "desenfocar", que resuelve a null y usa el propio video borroso).
+    if (processorRef.current && className) {
+      await processorRef.current.setBackgroundImage(resolveBackgroundImage(className));
     }
-  }
+  };
+
   return (
     <div className="wrapper">
       <div className="main-screen">
@@ -139,7 +216,8 @@ const mapStateToProps = (state) => {
     stream: state.mainStream,
     participants: state.participants,
     currentUser: state.currentUser,
-    background: state.background
+    background: state.background,
+    className: state.className,
   };
 };
 
@@ -148,7 +226,7 @@ const mapDispatchToProps = (dispatch) => {
     setMainStream: (stream) => dispatch(setMainStream(stream)),
     updateUser: (user) => dispatch(updateUser(user)),
     setBackgroundStream: (background) => dispatch(setBackgroundStream(background)),
-    setBackgroundPicture: (className) => dispatch(setBackgroundPicture(className))
+    setBackgroundPicture: (className) => dispatch(setBackgroundPicture(className)),
   };
 };
 

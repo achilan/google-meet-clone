@@ -1,14 +1,20 @@
+.wrapper{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .main-screen{
     width: 100%;
-    height: 90vh;
+    flex: 1 1 auto;
+    min-height: 0;
     background: #444;
 }
 
-.wrapper{
-    width: 100%;
-}
-
 .footer{
-    height: 10vh;
+    flex: 0 0 auto;
+    min-height: 64px;
     background: linear-gradient(135deg, #009cb6 0%, #007a8c 100%);
 }

@@ -8,86 +8,37 @@ export const Participant = (props) => {
   const {
     curentIndex,
     currentParticipant,
-    hideVideo,
     videoRef,
     showAvatar,
     currentUser,
-    background,
-    canvasRef
   } = props;
-  
-  // Monitor video stream changes for current user (especially important on mobile)
+
+  // En móvil el <video> a veces queda en pausa aunque tenga stream: forzar play.
   useEffect(() => {
-    if (currentUser && videoRef && videoRef.current && currentParticipant) {
+    if (currentUser && videoRef && videoRef.current) {
       const videoElement = videoRef.current;
-      
-      const handleLoadedMetadata = () => {
-        //console.log('Video metadata loaded, video ready');
-      };
-      
-      const handleCanPlay = () => {
-        //console.log('Video can play');
-      };
-      
-      const handleError = (e) => {
-        //console.error('Video error:', e);
-      };
-      
-      // Add event listeners
-      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-      videoElement.addEventListener('canplay', handleCanPlay);
-      videoElement.addEventListener('error', handleError);
-      
-      // Force video to play if it has a stream but isn't playing
       if (videoElement.srcObject && videoElement.paused) {
-        videoElement.play().catch(e => console.log('Auto-play prevented:', e));
+        videoElement.play().catch(() => {});
       }
-      
-      return () => {
-        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        videoElement.removeEventListener('canplay', handleCanPlay);
-        videoElement.removeEventListener('error', handleError);
-      };
     }
   }, [currentUser, videoRef, currentParticipant?.video]);
-  
+
   if (!currentParticipant) return <></>;
-  
-  // For current user, check if video is disabled - simplified logic
+
+  // Cámara apagada (solo aplica al usuario actual, que controla su propio track).
   const isVideoDisabled = currentUser && !currentParticipant.video;
-  
-  // Debug log for mobile troubleshooting
-  console.log('Participant debug:', {
-    currentUser,
-    participantName: currentParticipant.name,
-    video: currentParticipant.video,
-    hasVideoRef: !!videoRef,
-    hasSrcObject: videoRef && videoRef.current ? !!videoRef.current.srcObject : false,
-    isVideoDisabled
-  });
-  
-  const randomBackground = () => {
-    const classes = ["background1", "background1", "background1"];
-    const random = Math.floor(Math.random() * 3);
-    return classes[random];
-  }
+
   return (
-    <div className={`participant ${hideVideo ? "hide" : ""}`}>
+    <div className="participant">
       <Card>
         <video
           ref={videoRef}
-          className={`video ${isVideoDisabled ? 'video-disabled' : ''}`}
+          className={`video ${isVideoDisabled ? "video-disabled" : ""}`}
           id={`participantVideo${curentIndex}`}
           autoPlay
           playsInline
-          muted={currentUser} // Mute own video to prevent feedback
+          muted={currentUser}
           controls={false}
-          onLoadedMetadata={() => {
-            console.log('Video element loaded metadata for:', currentParticipant.name);
-          }}
-          onError={(e) => {
-            console.error('Video element error for:', currentParticipant.name, e);
-          }}
         ></video>
         {isVideoDisabled && (
           <div className="video-placeholder">
@@ -97,15 +48,6 @@ export const Participant = (props) => {
             </div>
           </div>
         )}
-        <canvas
-          ref={canvasRef}
-          className={`canvas ${isVideoDisabled ? 'canvas-disabled' : ''}`}
-          id={`participantCanvas${curentIndex}`}
-        ></canvas>
-        <img 
-          className="none-img"
-          id={`imageCanvas${curentIndex}`}
-        />
         {!currentParticipant.audio && (
           <FontAwesomeIcon
             className="muted"
@@ -123,7 +65,7 @@ export const Participant = (props) => {
         )}
         <div className="name">
           {currentParticipant.name}
-          {currentUser ? "(You)" : ""}
+          {currentUser ? " (Tú)" : ""}
         </div>
       </Card>
     </div>

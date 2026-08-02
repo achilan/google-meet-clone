@@ -1,20 +1,159 @@
-.participants {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-size), 1fr);
-  grid-gap: 20px;
-  height: 85vh;
-  padding: 10px;
-  }
+/* Escenario tipo WhatsApp: una vista principal + un recuadro flotante (PiP).
+   Responsive: llena el 100% del contenedor (funciona embebido en un iframe). */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: #202124;
+  overflow: hidden;
+}
 
-.participants img{
-    border-radius: 50%; 
-    height: 120px; 
-    width: 120px;
-  }
+.stage-slot {
+  position: absolute;
+  transition: all 0.25s ease;
+}
 
-  @media (max-width: 800px) {
-    .participants {
-      grid-template-columns: repeat(var(--grid-col-size), 1fr);
-      grid-template-rows: repeat(var(--grid-row-size), 1fr);
-    }
+/* Vista principal: cubre todo el escenario. */
+.stage-slot.is-main {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Recuadro flotante (PiP), tamaño relativo para adaptarse al iframe. */
+.stage-slot.is-pip {
+  width: clamp(96px, 22%, 200px);
+  aspect-ratio: 3 / 4;
+  right: 3%;
+  bottom: 4%;
+  z-index: 5;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.stage-slot.is-pip:hover {
+  transform: scale(1.03);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.stage-slot.hidden-slot {
+  display: none;
+}
+
+/* Indicador de "intercambiar" sobre el PiP. */
+.stage-slot.is-pip::after {
+  content: "⇄";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  z-index: 6;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* Hacer que el participante llene su slot (principal o PiP). */
+.stage-slot .participant,
+.stage-slot .card {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: inherit;
+}
+
+.stage-slot .video,
+.stage-slot .canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Ajustes de escala dentro del PiP. */
+.stage-slot.is-pip .name {
+  font-size: 12px;
+  left: 8px;
+  bottom: 6px;
+}
+.stage-slot.is-pip .avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 38px;
+}
+.stage-slot.is-pip .muted {
+  width: 18px !important;
+  height: 18px;
+  right: 6px;
+  top: 6px;
+}
+.stage-slot.is-pip .video-off-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+.stage-slot.is-pip .video-off-text {
+  font-size: 11px;
+}
+
+/* Estado de espera. */
+.waiting-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.waiting-spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #009cb6;
+  border-radius: 50%;
+  animation: stage-spin 1s linear infinite;
+}
+
+@keyframes stage-spin {
+  to {
+    transform: rotate(360deg);
   }
+}
+
+/* Móvil / iframes angostos: PiP algo mayor en proporción y más pegado a la esquina. */
+@media (max-width: 800px) {
+  .stage-slot.is-pip {
+    width: clamp(84px, 30%, 130px);
+    right: 12px;
+    bottom: 12px;
+    border-radius: 10px;
+  }
+  .stage-slot.is-pip::after {
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+  .waiting-overlay p {
+    font-size: 14px;
+  }
+}

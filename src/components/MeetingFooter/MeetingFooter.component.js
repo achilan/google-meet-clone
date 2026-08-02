@@ -14,6 +14,7 @@ import {
   faPhoneSlash
 } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
+import { BLUR_BACKGROUND } from "../../server/backgroundProcessor";
 import "./MeetingFooter.css";
 import 'react-responsive-modal/styles.css';
 import { Modal } from 'react-responsive-modal';
@@ -187,6 +188,20 @@ const MeetingFooter = (props) => {
             }}
           >
             <FontAwesomeIcon fontSize={30} color="#fff" icon={faBan} />
+          </div>
+          <div
+            key="blur"
+            className={`background-selection blur-option center ${streamState.className === BLUR_BACKGROUND ? "active-background" : ""}`}
+            onClick={() => {
+              if (!streamState.video) {
+                alert("Activa tu video para poder cambiar el fondo");
+                return;
+              }
+              onChangeBackgroundPictureFooter(BLUR_BACKGROUND);
+              onChangeBackgroundFooter(true);
+            }}
+          >
+            <span className="blur-option-label">Desenfocar fondo</span>
           </div>
           {backgrounds.map((background) => (
             <div

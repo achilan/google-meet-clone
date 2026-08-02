@@ -83,6 +83,34 @@ div[disabled]
   background-size: cover;
   background-position: center;
 }
+/* Swatch "Desenfocar fondo": muestra una imagen de muestra borrosa como pista. */
+.blur-option {
+  background-image: url('./../../assets/1.jpg');
+  background-size: cover;
+  background-position: center;
+}
+.blur-option::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 1;
+}
+.blur-option-label {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
 .react-responsive-modal-modal,
 .custom-modal-backgrounds {
   width: 90% !important;
