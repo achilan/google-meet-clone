@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import Card from "../../Shared/Card/Card.component";
-import { faMicrophoneSlash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { MicOff, VideoOff } from "../../Shared/icons";
 import "./Participant.css";
 
 export const Participant = (props) => {
@@ -43,17 +42,17 @@ export const Participant = (props) => {
         {isVideoDisabled && (
           <div className="video-placeholder">
             <div className="video-placeholder-content">
-              <span className="video-off-icon">📷</span>
+              <span className="video-off-icon">
+                <VideoOff size={44} strokeWidth={1.5} />
+              </span>
               <span className="video-off-text">Cámara desactivada</span>
             </div>
           </div>
         )}
         {!currentParticipant.audio && (
-          <FontAwesomeIcon
-            className="muted"
-            icon={faMicrophoneSlash}
-            title="Muted"
-          />
+          <div className="muted" title="Silenciado">
+            <MicOff size={13} strokeWidth={2.5} />
+          </div>
         )}
         {showAvatar && (
           <div

@@ -5,13 +5,13 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  background: #202124;
+  background: radial-gradient(circle at 50% 28%, #1b2b36 0%, #0b141a 78%);
   overflow: hidden;
 }
 
 .stage-slot {
   position: absolute;
-  transition: all 0.25s ease;
+  transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Vista principal: cubre todo el escenario. */
@@ -24,21 +24,21 @@
 
 /* Recuadro flotante (PiP), tamaño relativo para adaptarse al iframe. */
 .stage-slot.is-pip {
-  width: clamp(96px, 22%, 200px);
+  width: clamp(104px, 24%, 190px);
   aspect-ratio: 3 / 4;
-  right: 3%;
-  bottom: 4%;
-  z-index: 5;
-  border-radius: 12px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 6;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
 }
 
 .stage-slot.is-pip:hover {
-  transform: scale(1.03);
-  border-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.04);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .stage-slot.hidden-slot {
@@ -47,21 +47,23 @@
 
 /* Indicador de "intercambiar" sobre el PiP. */
 .stage-slot.is-pip::after {
-  content: "⇄";
+  content: "\21C4";
   position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 22px;
-  height: 22px;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-radius: 50%;
-  z-index: 6;
-  opacity: 0.85;
+  z-index: 7;
+  opacity: 0.9;
   pointer-events: none;
 }
 
@@ -72,6 +74,7 @@
   height: 100%;
   min-height: 0;
   border-radius: inherit;
+  background: transparent;
 }
 
 .stage-slot .video,
@@ -81,13 +84,35 @@
   min-height: 0;
   object-fit: cover;
   border-radius: inherit;
+  background: #0b141a;
+}
+
+/* Auto-vista espejada (como WhatsApp/Meet muestran tu propia cámara). */
+.self-slot .video {
+  transform: scaleX(-1);
+}
+
+/* Nombre sobre el video: pastilla translúcida abajo a la izquierda. */
+.stage-slot .name {
+  left: 14px;
+  bottom: 14px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 20px;
+  z-index: 3;
 }
 
 /* Ajustes de escala dentro del PiP. */
 .stage-slot.is-pip .name {
-  font-size: 12px;
   left: 8px;
-  bottom: 6px;
+  bottom: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
 }
 .stage-slot.is-pip .avatar {
   width: 64px;
@@ -95,10 +120,10 @@
   font-size: 38px;
 }
 .stage-slot.is-pip .muted {
-  width: 18px !important;
-  height: 18px;
-  right: 6px;
-  top: 6px;
+  width: 20px !important;
+  height: 20px;
+  right: 8px;
+  top: 8px;
 }
 .stage-slot.is-pip .video-off-icon {
   font-size: 26px;
@@ -106,6 +131,60 @@
 }
 .stage-slot.is-pip .video-off-text {
   font-size: 11px;
+}
+
+/* Barra superior con el nombre del contacto. */
+.call-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: 16px 18px 34px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+.call-topbar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.call-topbar-name {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.call-topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.call-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #25d366; /* verde WhatsApp */
+  box-shadow: 0 0 0 rgba(37, 211, 102, 0.5);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
 }
 
 /* Estado de espera. */
@@ -116,20 +195,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 18px;
   padding: 20px;
   text-align: center;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.9);
   z-index: 10;
   pointer-events: none;
 }
 
 .waiting-spinner {
-  width: 46px;
-  height: 46px;
-  border: 4px solid rgba(255, 255, 255, 0.25);
-  border-top-color: #009cb6;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #25d366;
   border-radius: 50%;
   animation: stage-spin 1s linear infinite;
 }
@@ -140,18 +218,30 @@
   }
 }
 
-/* Móvil / iframes angostos: PiP algo mayor en proporción y más pegado a la esquina. */
+/* Móvil / iframes angostos. */
 @media (max-width: 800px) {
   .stage-slot.is-pip {
-    width: clamp(84px, 30%, 130px);
+    width: clamp(92px, 30%, 128px);
     right: 12px;
     bottom: 12px;
-    border-radius: 10px;
+    border-radius: 14px;
   }
   .stage-slot.is-pip::after {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     font-size: 11px;
+  }
+  .call-topbar {
+    padding: 12px 14px 28px;
+  }
+  .call-topbar-name {
+    font-size: 15px;
+  }
+  .stage-slot .name {
+    font-size: 12px;
+    padding: 3px 10px;
+    left: 10px;
+    bottom: 10px;
   }
   .waiting-overlay p {
     font-size: 14px;

@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import background1 from "../../assets/1.jpg";
 import background2 from "../../assets/2.jpg";
 import background3 from "../../assets/3.jpg";
 import {
-  faMicrophone,
-  faVideo,
-  faDesktop,
-  faVideoSlash,
-  faMicrophoneSlash,
-  faImage,
-  faBan,
-  faPhoneSlash
-} from "@fortawesome/free-solid-svg-icons";
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  ImageIcon,
+  Ban,
+  PhoneOff,
+} from "../Shared/icons";
 import ReactTooltip from "react-tooltip";
 import { BLUR_BACKGROUND } from "../../server/backgroundProcessor";
 import "./MeetingFooter.css";
@@ -161,7 +159,7 @@ const MeetingFooter = (props) => {
   return (
     <div className="meeting-footer">
       <div className={"meeting-icons " + (streamState.background ? "active" : "")} data-tip="Change Background" onClick={openModalBackground} >
-        <FontAwesomeIcon icon={faImage} />
+        <ImageIcon size={22} strokeWidth={2} />
       </div>
       <Modal 
         open={open} 
@@ -187,7 +185,7 @@ const MeetingFooter = (props) => {
               //onCloseModal();
             }}
           >
-            <FontAwesomeIcon fontSize={30} color="#fff" icon={faBan} />
+            <Ban size={30} color="#fff" strokeWidth={2} />
           </div>
           <div
             key="blur"
@@ -233,10 +231,11 @@ const MeetingFooter = (props) => {
           WebkitTapHighlightColor: 'transparent'
         }}
       >
-        <FontAwesomeIcon
-          icon={!streamState.mic ? faMicrophoneSlash : faMicrophone}
-          title="Mute"
-        />
+        {!streamState.mic ? (
+          <MicOff size={22} strokeWidth={2} />
+        ) : (
+          <Mic size={22} strokeWidth={2} />
+        )}
       </div>
       <div
         className={"meeting-icons " + (!streamState.video ? "active" : "")}
@@ -251,22 +250,18 @@ const MeetingFooter = (props) => {
           WebkitTapHighlightColor: 'transparent'
         }}
       >
-        <FontAwesomeIcon icon={!streamState.video ? faVideoSlash : faVideo} />
+        {!streamState.video ? (
+          <VideoOff size={22} strokeWidth={2} />
+        ) : (
+          <Video size={22} strokeWidth={2} />
+        )}
       </div>
-     {/*  <div
-        className="meeting-icons"
-        data-tip="Share Screen"
-        onClick={onScreenClick}
-        disabled={streamState.screen}
-      >
-        <FontAwesomeIcon icon={faDesktop} />
-      </div> */}
       <div
         className="meeting-icons end-call-button"
         data-tip="Finalizar llamada"
         onClick={onEndCall}
       >
-        <FontAwesomeIcon icon={faPhoneSlash} />
+        <PhoneOff size={22} strokeWidth={2} />
       </div>
       <ReactTooltip />
     </div>

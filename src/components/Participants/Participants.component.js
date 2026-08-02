@@ -87,8 +87,26 @@ const Participants = (props) => {
     );
   });
 
+  const remoteName =
+    hasRemote && props.participants[remoteKeys[0]]
+      ? props.participants[remoteKeys[0]].name
+      : null;
+
   return (
     <div className="stage">
+      {/* Barra superior tipo WhatsApp con el nombre del contacto y estado. */}
+      {hasRemote && (
+        <div className="call-topbar">
+          <div className="call-topbar-info">
+            <span className="call-topbar-name">{remoteName || "Participante"}</span>
+            <span className="call-topbar-status">
+              <span className="call-status-dot" />
+              En llamada
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Capa remota: contenedor fijo, alterna entre vista principal y PiP. */}
       <div
         className={`stage-slot remote-slot ${

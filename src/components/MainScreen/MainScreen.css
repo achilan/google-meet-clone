@@ -16,5 +16,5 @@
 .footer{
     flex: 0 0 auto;
     min-height: 64px;
-    background: linear-gradient(135deg, #009cb6 0%, #007a8c 100%);
+    background: #0b141a;
 }
